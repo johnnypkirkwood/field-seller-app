@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
 const Anthropic = require('@anthropic-ai/sdk');
-const { sfQuery, sfCreate } = require('./sf');
+const { sfQuery, sfCreate, sfUpdate } = require('./sf');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -424,6 +424,385 @@ When you call submitProposal, the records are created immediately and RSO will s
     console.error('plan-day error:', err.message);
     res.status(500).json({ ok: false, error: err.message });
   }
+});
+
+
+// ── M4b: Post-visit logging agent ─────────────────────────
+// /api/log-visit proposes structured updates from a rep's note.
+// /api/log-visit/commit executes the approved proposal.
+// Propose/commit split because mutations span Activity, ContentNote,
+// Opportunity, and CampaignMember — rep verifies before writes.
+
+const LOG_VISIT_TOOLS = [
+  {
+    name: 'getAppointmentContext',
+    description: "Returns the ServiceAppointment plus its parent Account and primary Contact. Call this first.",
+    input_schema: {
+      type: 'object',
+      required: ['appointmentId'],
+      properties: { appointmentId: { type: 'string' } },
+    },
+  },
+  {
+    name: 'queryOpenOpportunities',
+    description: 'Returns open (IsClosed=false) opportunities on a given Account.',
+    input_schema: {
+      type: 'object',
+      required: ['accountId'],
+      properties: { accountId: { type: 'string' } },
+    },
+  },
+  {
+    name: 'searchCampaignsByKeyword',
+    description: "Searches active Campaigns whose Name contains the keyword (case-insensitive). Use sparingly — pick a single distinctive token from the rep's note (e.g. 'Phillies'), not full phrases.",
+    input_schema: {
+      type: 'object',
+      required: ['keyword'],
+      properties: { keyword: { type: 'string' } },
+    },
+  },
+  {
+    name: 'submitProposal',
+    description: 'Submit the full proposal. Always your last action. Always include activity and completeAppointment; the others are optional.',
+    input_schema: {
+      type: 'object',
+      required: ['brief', 'activity', 'completeAppointment'],
+      properties: {
+        brief: {
+          type: 'string',
+          description: "Warm 1-2 sentence message to the rep. Something like 'I parsed your note. Here's what I'd update — does this look right?'",
+        },
+        activity: {
+          type: 'object',
+          required: ['contactId', 'subject', 'description'],
+          properties: {
+            contactId:   { type: 'string' },
+            subject:     { type: 'string', description: "Short — e.g. 'Visit summary — Bob Isis'" },
+            description: { type: 'string', description: 'Conversation summary in plain prose, 1-3 sentences.' },
+          },
+        },
+        contentNotes: {
+          type: 'array',
+          description: "Personal-interest notes for the contact. Title is short ('Phillies fan'); body is one sentence of context.",
+          items: {
+            type: 'object',
+            required: ['contactId', 'title', 'body'],
+            properties: {
+              contactId: { type: 'string' },
+              title:     { type: 'string' },
+              body:      { type: 'string' },
+            },
+          },
+        },
+        opportunityUpdates: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: ['opportunityId', 'fields'],
+            properties: {
+              opportunityId: { type: 'string' },
+              fields: {
+                type: 'object',
+                description: 'Map of Salesforce field API names → new values. E.g. { CloseDate: "2026-07-31" }',
+              },
+              reason: { type: 'string', description: 'One-line why, for the rep to verify.' },
+            },
+          },
+        },
+        campaignMembers: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: ['campaignId', 'contactId'],
+            properties: {
+              campaignId: { type: 'string' },
+              contactId:  { type: 'string' },
+              status:     { type: 'string', description: "Default 'Sent'." },
+            },
+          },
+        },
+        completeAppointment: {
+          type: 'object',
+          required: ['appointmentId'],
+          properties: { appointmentId: { type: 'string' } },
+        },
+      },
+    },
+  },
+];
+
+function escapeSoql(s) {
+  return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function handleGetAppointmentContext({ appointmentId }) {
+  const safeId = escapeSoql(appointmentId);
+  const sa = sfQuery(`
+    SELECT Id, Subject, Status, ParentRecordId, ContactId,
+           Account.Id, Account.Name, Account.BillingCity, Account.BillingState,
+           Contact.Id, Contact.FirstName, Contact.LastName, Contact.Title, Contact.Email
+    FROM ServiceAppointment
+    WHERE Id = '${safeId}' LIMIT 1
+  `);
+  if (!sa.records.length) return { error: 'ServiceAppointment not found' };
+  const r = sa.records[0];
+  return {
+    appointment: {
+      id: r.Id,
+      subject: r.Subject,
+      status:  r.Status,
+      accountId: r.Account?.Id || r.ParentRecordId,
+      accountName: r.Account?.Name || null,
+      accountCity: r.Account?.BillingCity || null,
+      accountState: r.Account?.BillingState || null,
+      contactId: r.Contact?.Id || r.ContactId || null,
+      contactFirstName: r.Contact?.FirstName || null,
+      contactLastName:  r.Contact?.LastName  || null,
+      contactTitle:     r.Contact?.Title || null,
+      contactEmail:     r.Contact?.Email || null,
+    },
+  };
+}
+
+function handleQueryOpenOpportunities({ accountId }) {
+  const safeId = escapeSoql(accountId);
+  const r = sfQuery(`
+    SELECT Id, Name, StageName, Amount, CloseDate, Description
+    FROM Opportunity
+    WHERE AccountId = '${safeId}' AND IsClosed = false
+    ORDER BY CloseDate ASC NULLS LAST
+  `);
+  return { opportunities: r.records.map(o => ({
+    id: o.Id, name: o.Name, stage: o.StageName,
+    amount: o.Amount, closeDate: o.CloseDate, description: o.Description,
+  })) };
+}
+
+function handleSearchCampaigns({ keyword }) {
+  const safe = escapeSoql(keyword);
+  const r = sfQuery(`
+    SELECT Id, Name, Type, Status, StartDate, EndDate
+    FROM Campaign
+    WHERE IsActive = true AND Name LIKE '%${safe}%'
+    ORDER BY StartDate ASC NULLS LAST
+    LIMIT 10
+  `);
+  return { campaigns: r.records.map(c => ({
+    id: c.Id, name: c.Name, type: c.Type,
+    status: c.Status, startDate: c.StartDate, endDate: c.EndDate,
+  })) };
+}
+
+app.post('/api/log-visit', async (req, res) => {
+  const { note, appointmentId, history = [] } = req.body;
+  if (!history.length) {
+    if (!note)          return res.status(400).json({ ok: false, error: 'note required' });
+    if (!appointmentId) return res.status(400).json({ ok: false, error: 'appointmentId required' });
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  const systemPrompt = `You are an AI assistant helping Johnny Kirkwood, a field sales rep, log what just happened on a sales visit.
+
+The rep speaks a quick post-visit note. You translate it into a structured proposal of CRM updates. The rep verifies and approves before anything is written, so your job is to capture intent precisely — don't invent details, don't add fluff.
+
+WORKFLOW:
+1. Call getAppointmentContext with the provided appointmentId to learn the account, contact, and SA.
+2. Call queryOpenOpportunities for that account if the note mentions deal timing, close dates, stage, or amount changes.
+3. Call searchCampaignsByKeyword for a distinctive token from the note ONLY IF the rep mentioned a specific event/outing/invite (e.g. "Phillies", "Dreamforce"). Pick one token, not a phrase. Skip otherwise.
+4. Call submitProposal once with the full plan. Required: an activity (Task summarizing the conversation, attached to the contact) and completeAppointment (the SA the rep just finished). Optional: contentNotes for personal interests, opportunityUpdates for deal changes, campaignMembers for events the rep mentioned.
+
+CLARIFICATION:
+- If the note mentions a deal change but multiple open opps could match, ask ONE clarifying question and stop. Same for ambiguous campaign matches.
+- If the note is just a general summary with no specific updates, that's fine — submit a proposal with just activity + completeAppointment.
+
+DATE INTERPRETATION:
+- Today is ${today}. "Close in July" with no year → ${today.slice(0, 4)}-07-31 (last day of the month). "End of Q3" → 2026-09-30. Be conservative and pick the end of the period.
+
+CONTENT NOTE STYLE:
+- Title: 2-4 words, the topic ("Phillies fan", "Daughter at Stanford").
+- Body: one factual sentence. No editorializing.
+- ALWAYS create a ContentNote when the rep observes a personal-interest reaction — e.g. "he was stoked about X", "she's a big Y fan", "his daughter is at Z". This is true even when X is something you're also adding the contact to as a campaign member: the campaign captures the invite, the ContentNote captures the durable fact about the contact for future reference.
+
+ACTIVITY STYLE:
+- Subject: short — "Visit summary — <Contact First Last>" or "Conversation re: <topic>".
+- Description: 1-3 sentences capturing what was actually said. No invented details.`;
+
+  const messages = [
+    ...history,
+    ...(history.length ? [] : [{
+      role: 'user',
+      content: `ServiceAppointment Id: ${appointmentId}\n\nRep's note:\n${note}`,
+    }]),
+  ];
+
+  try {
+    let proposal = null;
+
+    while (true) {
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4096,
+        system: systemPrompt,
+        tools: LOG_VISIT_TOOLS,
+        messages,
+      });
+
+      if (response.stop_reason === 'end_turn') {
+        messages.push({ role: 'assistant', content: response.content });
+        const text = response.content.find(c => c.type === 'text')?.text || '';
+        return res.json({ ok: true, status: 'clarifying', message: text, history: messages });
+      }
+
+      if (response.stop_reason === 'tool_use') {
+        messages.push({ role: 'assistant', content: response.content });
+
+        const toolUses = response.content.filter(c => c.type === 'tool_use');
+        const toolResults = [];
+
+        for (const tu of toolUses) {
+          let result;
+          try {
+            if (tu.name === 'getAppointmentContext') {
+              result = handleGetAppointmentContext(tu.input);
+            } else if (tu.name === 'queryOpenOpportunities') {
+              result = handleQueryOpenOpportunities(tu.input);
+            } else if (tu.name === 'searchCampaignsByKeyword') {
+              result = handleSearchCampaigns(tu.input);
+            } else if (tu.name === 'submitProposal') {
+              proposal = tu.input;
+              result = { ok: true, received: true };
+            } else {
+              result = { error: `Unknown tool: ${tu.name}` };
+            }
+          } catch (toolErr) {
+            result = { error: toolErr.message };
+          }
+
+          toolResults.push({
+            type: 'tool_result',
+            tool_use_id: tu.id,
+            content: JSON.stringify(result),
+          });
+        }
+
+        messages.push({ role: 'user', content: toolResults });
+
+        if (proposal) {
+          return res.json({
+            ok: true,
+            status: 'proposed',
+            brief: proposal.brief,
+            proposal: {
+              activity:            proposal.activity,
+              contentNotes:        proposal.contentNotes        || [],
+              opportunityUpdates:  proposal.opportunityUpdates  || [],
+              campaignMembers:     proposal.campaignMembers     || [],
+              completeAppointment: proposal.completeAppointment,
+            },
+            history: messages,
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error('log-visit error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── /api/log-visit/commit ────────────────────────────────
+// Executes a proposal returned from /api/log-visit. Continues on partial
+// failure — returns counts of what landed plus any errors.
+
+app.post('/api/log-visit/commit', async (req, res) => {
+  const { proposal } = req.body;
+  if (!proposal) return res.status(400).json({ ok: false, error: 'proposal required' });
+
+  const executed = { activity: 0, contentNotes: 0, opportunityUpdates: 0, campaignMembers: 0, completeAppointment: 0 };
+  const errors = [];
+  const today = new Date().toISOString().slice(0, 10);
+
+  // 1. Activity (Task on contact)
+  if (proposal.activity) {
+    try {
+      const a = proposal.activity;
+      await sfCreate('Task', {
+        WhoId:        a.contactId,
+        Subject:      a.subject,
+        Description:  a.description,
+        Status:       'Completed',
+        ActivityDate: today,
+        OwnerId:      REP.userId,
+      });
+      executed.activity = 1;
+    } catch (err) {
+      console.error('Task create failed:', err.message);
+      errors.push({ type: 'activity', error: err.message });
+    }
+  }
+
+  // 2. ContentNotes — create note, then link to contact via ContentDocumentLink
+  for (const n of proposal.contentNotes || []) {
+    try {
+      const noteHtml = `<p>${n.body.replace(/[&<>]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]))}</p>`;
+      const note = await sfCreate('ContentNote', {
+        Title:   n.title,
+        Content: Buffer.from(noteHtml, 'utf8').toString('base64'),
+        OwnerId: REP.userId,
+      });
+      await sfCreate('ContentDocumentLink', {
+        ContentDocumentId: note.id,
+        LinkedEntityId:    n.contactId,
+        ShareType:         'V',
+      });
+      executed.contentNotes++;
+    } catch (err) {
+      console.error('ContentNote create failed:', err.message);
+      errors.push({ type: 'contentNote', title: n.title, error: err.message });
+    }
+  }
+
+  // 3. Opportunity updates
+  for (const o of proposal.opportunityUpdates || []) {
+    try {
+      await sfUpdate('Opportunity', o.opportunityId, o.fields);
+      executed.opportunityUpdates++;
+    } catch (err) {
+      console.error('Opportunity update failed:', err.message);
+      errors.push({ type: 'opportunityUpdate', opportunityId: o.opportunityId, error: err.message });
+    }
+  }
+
+  // 4. Campaign members
+  for (const cm of proposal.campaignMembers || []) {
+    try {
+      await sfCreate('CampaignMember', {
+        CampaignId: cm.campaignId,
+        ContactId:  cm.contactId,
+        Status:     cm.status || 'Sent',
+      });
+      executed.campaignMembers++;
+    } catch (err) {
+      console.error('CampaignMember create failed:', err.message);
+      errors.push({ type: 'campaignMember', contactId: cm.contactId, error: err.message });
+    }
+  }
+
+  // 5. Complete the SA
+  if (proposal.completeAppointment?.appointmentId) {
+    try {
+      await sfUpdate('ServiceAppointment', proposal.completeAppointment.appointmentId, {
+        Status: 'Completed',
+      });
+      executed.completeAppointment = 1;
+    } catch (err) {
+      console.error('SA complete failed:', err.message);
+      errors.push({ type: 'completeAppointment', error: err.message });
+    }
+  }
+
+  res.json({ ok: errors.length === 0, executed, ...(errors.length ? { errors } : {}) });
 });
 
 
