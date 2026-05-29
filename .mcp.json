@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "salesforce": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@salesforce/mcp",
+        "--orgs",
+        "DEFAULT_TARGET_ORG",
+        "--toolsets",
+        "all"
+      ],
+      "env": {}
+    }
+  }
+}

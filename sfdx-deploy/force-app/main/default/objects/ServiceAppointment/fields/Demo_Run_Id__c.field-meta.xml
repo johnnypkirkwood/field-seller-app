@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Demo_Run_Id__c</fullName>
+    <description>Used to scope demo runs of the Field Agent app. Populated with a UUID at SA creation time. Filter by this to see only the SAs from one run.</description>
+    <externalId>false</externalId>
+    <label>Demo Run Id</label>
+    <length>36</length>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
