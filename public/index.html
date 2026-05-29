@@ -201,6 +201,15 @@
     .slack-msg + .slack-msg { border-top: 1px solid #0f1e33; }
     .slack-msg.fading { opacity: 0; }
 
+    .slack-source {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
     .slack-avatar {
       width: 32px; height: 32px;
       border-radius: 6px;
@@ -639,33 +648,35 @@
             <div class="card-label">Needs your attention</div>
 
             <div class="slack-msg" id="slack-msg-0">
-              <div class="slack-avatar" style="background:#1e3a5f;color:#7dd3fc;">KB</div>
+              <div class="slack-avatar" style="background:#1e3a5f;color:#7dd3fc;">MR</div>
               <div class="slack-body">
+                <div class="slack-source">From Slack</div>
                 <div class="slack-header">
-                  <span class="slack-sender">Kendall B</span>
+                  <span class="slack-sender">Maya R</span>
                   <span class="slack-channel">#deals</span>
                   <span class="slack-time">10:14 AM</span>
                 </div>
-                <div class="slack-text">any update on Capital One?</div>
+                <div class="slack-text">any update on Acme Industries?</div>
                 <div class="slack-reply-area" id="reply-area-0">
                   <textarea class="reply-input" id="reply-input-0" placeholder="Reply in #deals…"></textarea>
-                  <button class="reply-send" onclick="sendReply(0)">Send</button>
+                  <button class="reply-send" onclick="sendReply(0)">Send to Slack</button>
                 </div>
               </div>
             </div>
 
             <div class="slack-msg" id="slack-msg-1">
-              <div class="slack-avatar" style="background:#1a3a1e;color:#86efac;">SR</div>
+              <div class="slack-avatar" style="background:#1a3a1e;color:#86efac;">DT</div>
               <div class="slack-body">
+                <div class="slack-source">From Slack</div>
                 <div class="slack-header">
-                  <span class="slack-sender">Sam R</span>
+                  <span class="slack-sender">Devon T</span>
                   <span class="slack-channel">DM</span>
                   <span class="slack-time">9:52 AM</span>
                 </div>
-                <div class="slack-text">can you sign the F5 NDA before EOD?</div>
+                <div class="slack-text">can you sign the vendor NDA before EOD?</div>
                 <div class="slack-reply-area" id="reply-area-1">
-                  <textarea class="reply-input" id="reply-input-1" placeholder="Reply to Sam R…"></textarea>
-                  <button class="reply-send" onclick="sendReply(1)">Send</button>
+                  <textarea class="reply-input" id="reply-input-1" placeholder="Reply to Devon T…"></textarea>
+                  <button class="reply-send" onclick="sendReply(1)">Send to Slack</button>
                 </div>
               </div>
             </div>
@@ -689,7 +700,7 @@
           <div class="prompt-chips">
             <button class="chip" onclick="fillChat('Plan my day')">Plan my day</button>
             <button class="chip" onclick="fillChat('Log my last visit')">Log my last visit</button>
-            <button class="chip" onclick="fillChat('Catch me up on Capital One')">Catch me up on Capital One</button>
+            <button class="chip" onclick="fillChat('Catch me up on Acme Industries')">Catch me up on Acme Industries</button>
           </div>
           <div class="chat-input-row">
             <textarea class="chat-input" id="chat-input" placeholder="What are we doing today, Johnny?"></textarea>
@@ -1000,6 +1011,10 @@
 
       appendRepMessage(val);
       showThinkingBubble();
+
+      // Yield a frame so the rep bubble + Thinking… placeholder paint
+      // before we kick off the network request.
+      await new Promise(requestAnimationFrame);
 
       try {
         const res = await fetch('/api/plan-day', {

@@ -122,8 +122,8 @@ app.post('/api/daily-brief', async (req, res) => {
 Rep: Johnny Kirkwood, field sales
 Open opportunities:
   - Isis Toyota - lift replacement ($48,000, close Sept 30, 12 days no activity)
-  - Capital One - fleet expansion ($220,000, close Dec 31, 31 days no activity)
-  - F5 Networks - software renewal ($34,000, close Jul 15, 5 days no activity)
+  - Acme Industries - fleet expansion ($220,000, close Dec 31, 31 days no activity)
+  - Northwind Logistics - software renewal ($34,000, close Jul 15, 5 days no activity)
 Weather: partly cloudy, 72°F, good driving day
 Today: Thursday
   `.trim();
@@ -132,7 +132,7 @@ Today: Thursday
     const msg = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 200,
-      system: "You're a calm, helpful assistant briefing a field sales rep on their morning. Keep it under 120 words, conversational, no bullet points. Surface what matters most.",
+      system: "You're a calm, helpful assistant briefing a field sales rep on their morning. Keep it under 450 characters, conversational, no bullet points, no fluff.",
       messages: [{ role: 'user', content: mockContext }],
     });
 
