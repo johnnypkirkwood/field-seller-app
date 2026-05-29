@@ -4,9 +4,45 @@ const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
 const Anthropic = require('@anthropic-ai/sdk');
-const { sfQuery, sfCreate, sfUpdate } = require('./sf');
+const { sfQuery } = require('./sf');
+const mcp = require('./lib/mcp-client');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// Runtime agent goes through the org's ClaudeConnectMCP server (HTTP + Client Credentials).
+// sf.js stays for non-agent paths (/api/appointments, startup WorkType lookup) and seed scripts.
+// ClaudeConnectMCP exposes toolset-suffixed names; the `_all` variants
+// cover read + write + delete in one toolset.
+const MCP_TOOL = {
+  soql:   'soqlQueryplatform_sobject_all',
+  create: 'createSobjectRecordplatform_sobject_all',
+  update: 'updateSobjectRecordplatform_sobject_all',
+};
+
+async function mcpQuery(soql) {
+  const r = await mcp.callTool(MCP_TOOL.soql, { q: soql });
+  // SF REST shape: { totalSize, done, records }. Some MCP servers wrap differently.
+  if (r && Array.isArray(r.records)) return r;
+  if (r && r.result && Array.isArray(r.result.records)) return r.result;
+  if (Array.isArray(r)) return { records: r };
+  return r || { records: [] };
+}
+
+async function mcpCreate(sobject, fields) {
+  const r = await mcp.callTool(MCP_TOOL.create, { 'sobject-name': sobject, body: fields });
+  return normalizeWriteResult(r);
+}
+
+async function mcpUpdate(sobject, recordId, fields) {
+  const r = await mcp.callTool(MCP_TOOL.update, { 'sobject-name': sobject, id: recordId, body: fields });
+  return normalizeWriteResult(r);
+}
+
+function normalizeWriteResult(r) {
+  if (!r || typeof r !== 'object') return { id: null, raw: r };
+  const id = r.id || r.Id || r.recordId || r.result?.id || r.result?.Id || null;
+  return { ...r, id };
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -203,8 +239,8 @@ const PLAN_TOOLS = [
   },
 ];
 
-function handleQueryAccounts() {
-  const result = sfQuery(`
+async function handleQueryAccounts() {
+  const result = await mcpQuery(`
     SELECT Id, Name, Type, BillingStreet, BillingCity, BillingState,
            BillingPostalCode, SDO_MAPS_Days_Since_Last_Visit__c,
            (SELECT Id, Name FROM Contacts ORDER BY CreatedDate ASC LIMIT 1)
@@ -215,7 +251,7 @@ function handleQueryAccounts() {
     ORDER BY SDO_MAPS_Days_Since_Last_Visit__c DESC NULLS LAST
     LIMIT 10
   `);
-  return result.records.map(a => ({
+  return (result.records || []).map(a => ({
     accountId:          a.Id,
     accountName:        a.Name,
     type:               a.Type,
@@ -318,17 +354,17 @@ When you call submitProposal, the records are created immediately and RSO will s
           let result;
           try {
             if (tu.name === 'queryTopAccountsByLastVisit') {
-              result = handleQueryAccounts();
+              result = await handleQueryAccounts();
             } else if (tu.name === 'getRepTerritory') {
               result = handleGetTerritory();
             } else if (tu.name === 'submitProposal') {
               proposal = tu.input;
-              // Create records in parallel
+              // Create records in parallel via MCP
               const created = { appointments: [], absence: null };
               const errors  = [];
 
               const apptCreates = (proposal.appointments || []).map(appt =>
-                sfCreate('ServiceAppointment', {
+                mcpCreate('ServiceAppointment', {
                   ParentRecordId:     appt.accountId,
                   ContactId:          appt.contactId || undefined,
                   Subject:            appt.subject,
@@ -346,7 +382,7 @@ When you call submitProposal, the records are created immediately and RSO will s
               );
 
               const absencePromise = proposal.absence
-                ? sfCreate('ResourceAbsence', {
+                ? mcpCreate('ResourceAbsence', {
                     ResourceId: REP.serviceResourceId,
                     Type:       'Personal',
                     Start:      proposal.absence.start,
@@ -535,16 +571,16 @@ function escapeSoql(s) {
   return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
-function handleGetAppointmentContext({ appointmentId }) {
+async function handleGetAppointmentContext({ appointmentId }) {
   const safeId = escapeSoql(appointmentId);
-  const sa = sfQuery(`
+  const sa = await mcpQuery(`
     SELECT Id, Subject, Status, ParentRecordId, ContactId,
            Account.Id, Account.Name, Account.BillingCity, Account.BillingState,
            Contact.Id, Contact.FirstName, Contact.LastName, Contact.Title, Contact.Email
     FROM ServiceAppointment
     WHERE Id = '${safeId}' LIMIT 1
   `);
-  if (!sa.records.length) return { error: 'ServiceAppointment not found' };
+  if (!sa.records?.length) return { error: 'ServiceAppointment not found' };
   const r = sa.records[0];
   return {
     appointment: {
@@ -564,30 +600,30 @@ function handleGetAppointmentContext({ appointmentId }) {
   };
 }
 
-function handleQueryOpenOpportunities({ accountId }) {
+async function handleQueryOpenOpportunities({ accountId }) {
   const safeId = escapeSoql(accountId);
-  const r = sfQuery(`
+  const r = await mcpQuery(`
     SELECT Id, Name, StageName, Amount, CloseDate, Description
     FROM Opportunity
     WHERE AccountId = '${safeId}' AND IsClosed = false
     ORDER BY CloseDate ASC NULLS LAST
   `);
-  return { opportunities: r.records.map(o => ({
+  return { opportunities: (r.records || []).map(o => ({
     id: o.Id, name: o.Name, stage: o.StageName,
     amount: o.Amount, closeDate: o.CloseDate, description: o.Description,
   })) };
 }
 
-function handleSearchCampaigns({ keyword }) {
+async function handleSearchCampaigns({ keyword }) {
   const safe = escapeSoql(keyword);
-  const r = sfQuery(`
+  const r = await mcpQuery(`
     SELECT Id, Name, Type, Status, StartDate, EndDate
     FROM Campaign
     WHERE IsActive = true AND Name LIKE '%${safe}%'
     ORDER BY StartDate ASC NULLS LAST
     LIMIT 10
   `);
-  return { campaigns: r.records.map(c => ({
+  return { campaigns: (r.records || []).map(c => ({
     id: c.Id, name: c.Name, type: c.Type,
     status: c.Status, startDate: c.StartDate, endDate: c.EndDate,
   })) };
@@ -664,11 +700,11 @@ ACTIVITY STYLE:
           let result;
           try {
             if (tu.name === 'getAppointmentContext') {
-              result = handleGetAppointmentContext(tu.input);
+              result = await handleGetAppointmentContext(tu.input);
             } else if (tu.name === 'queryOpenOpportunities') {
-              result = handleQueryOpenOpportunities(tu.input);
+              result = await handleQueryOpenOpportunities(tu.input);
             } else if (tu.name === 'searchCampaignsByKeyword') {
-              result = handleSearchCampaigns(tu.input);
+              result = await handleSearchCampaigns(tu.input);
             } else if (tu.name === 'submitProposal') {
               proposal = tu.input;
               result = { ok: true, received: true };
@@ -727,7 +763,7 @@ app.post('/api/log-visit/commit', async (req, res) => {
   if (proposal.activity) {
     try {
       const a = proposal.activity;
-      await sfCreate('Task', {
+      await mcpCreate('Task', {
         WhoId:        a.contactId,
         Subject:      a.subject,
         Description:  a.description,
@@ -746,12 +782,13 @@ app.post('/api/log-visit/commit', async (req, res) => {
   for (const n of proposal.contentNotes || []) {
     try {
       const noteHtml = `<p>${n.body.replace(/[&<>]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]))}</p>`;
-      const note = await sfCreate('ContentNote', {
+      const note = await mcpCreate('ContentNote', {
         Title:   n.title,
         Content: Buffer.from(noteHtml, 'utf8').toString('base64'),
         OwnerId: REP.userId,
       });
-      await sfCreate('ContentDocumentLink', {
+      if (!note.id) throw new Error('ContentNote create did not return an id');
+      await mcpCreate('ContentDocumentLink', {
         ContentDocumentId: note.id,
         LinkedEntityId:    n.contactId,
         ShareType:         'V',
@@ -766,7 +803,7 @@ app.post('/api/log-visit/commit', async (req, res) => {
   // 3. Opportunity updates
   for (const o of proposal.opportunityUpdates || []) {
     try {
-      await sfUpdate('Opportunity', o.opportunityId, o.fields);
+      await mcpUpdate('Opportunity', o.opportunityId, o.fields);
       executed.opportunityUpdates++;
     } catch (err) {
       console.error('Opportunity update failed:', err.message);
@@ -777,7 +814,7 @@ app.post('/api/log-visit/commit', async (req, res) => {
   // 4. Campaign members
   for (const cm of proposal.campaignMembers || []) {
     try {
-      await sfCreate('CampaignMember', {
+      await mcpCreate('CampaignMember', {
         CampaignId: cm.campaignId,
         ContactId:  cm.contactId,
         Status:     cm.status || 'Sent',
@@ -792,7 +829,7 @@ app.post('/api/log-visit/commit', async (req, res) => {
   // 5. Complete the SA
   if (proposal.completeAppointment?.appointmentId) {
     try {
-      await sfUpdate('ServiceAppointment', proposal.completeAppointment.appointmentId, {
+      await mcpUpdate('ServiceAppointment', proposal.completeAppointment.appointmentId, {
         Status: 'Completed',
       });
       executed.completeAppointment = 1;
@@ -806,6 +843,19 @@ app.post('/api/log-visit/commit', async (req, res) => {
 });
 
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running at http://localhost:${PORT}`);
+  try {
+    const tools = await mcp.listTools();
+    console.log(`MCP connected: ${tools.length} tools available`);
+  } catch (err) {
+    console.error('MCP connect failed at startup:', err.message);
+  }
 });
+
+const cleanup = async () => {
+  try { await mcp.shutdown(); } catch { /* ignore */ }
+  process.exit(0);
+};
+process.on('SIGINT',  cleanup);
+process.on('SIGTERM', cleanup);
