@@ -48,11 +48,10 @@
       border-radius: 44px;
       overflow: hidden;
       position: relative;
-      display: flex;
-      flex-direction: column;
+      display: block;
     }
 
-    /* ── Header overlay (shared) ───────────────────────────── */
+    /* ── Header overlay (shared across panes) ──────────────── */
     .header-overlay {
       position: absolute;
       top: 0; left: 0; right: 0;
@@ -125,18 +124,33 @@
     .sf-dot.connected    { background: #22c55e; animation: pulse-green 2.5s ease-in-out infinite; }
     .sf-dot.disconnected { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
 
-    /* ── STATE 1: Home view ────────────────────────────────── */
-    .home-view {
-      position: absolute;
-      inset: 0;
+    /* ── Panes carousel ────────────────────────────────────── */
+    .panes {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .panes::-webkit-scrollbar { display: none; }
+
+    .pane {
+      flex: 0 0 100%;
+      width: 100%;
+      height: 100%;
+      scroll-snap-align: start;
       overflow: hidden;
+      position: relative;
     }
 
+    /* ── Cards-scroll (Home + Admin) ───────────────────────── */
     .cards-scroll {
       position: absolute;
       inset: 0;
       overflow-y: auto;
-      padding: 82px 14px 180px;
+      padding: 82px 14px 120px;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -153,6 +167,16 @@
       color: #f1f5f9;
       letter-spacing: -0.02em;
       line-height: 1.2;
+    }
+
+    /* Pane heading (Admin only) */
+    .pane-heading {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #475569;
+      margin: 0 2px 14px;
     }
 
     /* Context cards */
@@ -287,219 +311,45 @@
 
     .opp-placeholder { font-size: 12px; color: #334155; font-style: italic; }
 
-    /* ── Chat thread ────────────────────────────────────────── */
-    .chat-thread {
-      position: absolute;
-      top: 82px;
-      left: 0; right: 0;
-      bottom: 120px;
-      overflow-y: auto;
-      padding: 12px 14px 0;
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      -webkit-overflow-scrolling: touch;
-    }
+    /* Follow-up stub (Admin) */
+    .followup-item { padding: 8px 0; }
+    .followup-item + .followup-item { border-top: 1px solid #0f1e33; }
+    .followup-title { font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 2px; }
+    .followup-meta  { font-size: 10px; color: #475569; }
 
-    .chat-thread::-webkit-scrollbar { width: 3px; }
-    .chat-thread::-webkit-scrollbar-track { background: transparent; }
-    .chat-thread::-webkit-scrollbar-thumb { background: #1e2a3a; border-radius: 2px; }
-
-    .chat-thread.active { display: flex; }
-
-    .bubble-rep {
-      align-self: flex-end;
-      background: #0d1526;
-      border: 1px solid #1e293b;
-      border-radius: 14px 14px 3px 14px;
-      padding: 10px 13px;
-      font-size: 13px;
-      color: #e2e8f0;
-      max-width: 85%;
-      line-height: 1.5;
-    }
-
-    .bubble-agent {
-      align-self: flex-start;
-      background: transparent;
-      padding: 2px 0;
-      font-size: 13px;
-      color: #cbd5e1;
-      max-width: 90%;
-      line-height: 1.55;
-      display: flex;
-      gap: 8px;
-      align-items: flex-start;
-    }
-
-    .bubble-agent-icon {
-      color: #0ea5e9;
-      font-size: 11px;
-      margin-top: 2px;
-      flex-shrink: 0;
-    }
-
-    .scheduling-indicator {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 6px;
-      padding-left: 19px;
-    }
-
-    @keyframes pulse-dot {
-      0%,100% { opacity: 0.3; }
-      50%      { opacity: 1; }
-    }
-
-    .sched-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #0ea5e9;
-      animation: pulse-dot 1.2s ease-in-out infinite;
-    }
-
-    .sched-dot:nth-child(2) { animation-delay: 0.2s; }
-    .sched-dot:nth-child(3) { animation-delay: 0.4s; }
-
-    .sched-label {
-      font-size: 11px;
-      color: #475569;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    /* ── Chat area (sticky above nav) ──────────────────────── */
-    .chat-area {
-      position: absolute;
-      bottom: 60px;
-      left: 0; right: 0;
-      padding: 4px 14px 8px;
-      background: linear-gradient(to top, rgba(10,14,26,1) 60%, transparent);
-      z-index: 5;
-    }
-
-    .prompt-chips {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 8px;
-      overflow-x: auto;
-      padding-bottom: 2px;
-    }
-
-    .prompt-chips::-webkit-scrollbar { display: none; }
-
-    .chip {
-      flex-shrink: 0;
-      background: #1e293b;
-      color: #94a3b8;
-      border: none;
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 12px;
-      cursor: pointer;
-      font-family: inherit;
-      transition: background 0.12s;
-    }
-
-    .chip:hover  { background: #334155; }
-    .chip:active { background: #334155; opacity: 0.8; }
-
-    .chat-input-row {
-      display: flex;
-      gap: 8px;
-      align-items: flex-end;
-    }
-
-    .chat-input {
-      flex: 1;
-      background: #0d1526;
-      border: 1px solid #1e293b;
-      border-radius: 8px;
-      padding: 12px;
-      color: #e2e8f0;
-      font-size: 14px;
-      resize: none;
-      height: 48px;
-      font-family: inherit;
-      transition: border-color 0.12s;
-      overflow: hidden;
-    }
-
-    .chat-input::placeholder { color: #334155; }
-    .chat-input:focus { outline: none; border-color: #0ea5e9; }
-
-    .send-btn {
-      width: 48px; height: 48px;
-      background: #0ea5e9;
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .send-btn:active { opacity: 0.7; }
-
-    /* ── Bottom nav (always visible) ───────────────────────── */
-    .bottom-bar {
-      position: absolute;
-      left: 0; right: 0; bottom: 0;
-      z-index: 25;
-      padding: 6px 14px 18px;
-      display: flex;
-      gap: 8px;
-      background: rgba(10,14,26,1);
-      border-radius: 0 0 44px 44px;
-      pointer-events: none;
-    }
-
-    .btn-mode {
-      flex: 1;
-      padding: 11px 8px;
-      border: none;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-      cursor: pointer;
-      transition: opacity 0.12s, transform 0.1s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      pointer-events: all;
-    }
-
-    .btn-mode:active { opacity: 0.7; transform: scale(0.98); }
-    .btn-plan { background: #0ea5e9; color: #fff; }
-    .btn-log  { background: #071910; color: #4ade80; border: 1px solid #14532d; }
-
-    /* ── STATE 3: Route view (hidden — TODO M3 activates this) */
-    .route-view {
-      position: absolute;
-      inset: 0;
-      display: none;
-    }
-
+    /* ── Itinerary pane ────────────────────────────────────── */
     #map {
       position: absolute;
       inset: 0;
       border-radius: 44px;
     }
 
-    /* Retained State 3 styles for when route view is activated in M3 */
+    .route-empty {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 5;
+      pointer-events: none;
+      padding: 16px 24px;
+      background: rgba(10, 14, 26, 0.88);
+      border: 1px solid #1e293b;
+      border-radius: 4px;
+    }
+
+    .route-empty.hidden { display: none; }
+    .route-empty-title  { font-size: 13px; font-weight: 700; color: #cbd5e1; letter-spacing: 0.04em; margin-bottom: 4px; }
+    .route-empty-sub    { font-size: 11px; color: #475569; letter-spacing: 0.04em; }
+
+    /* Bottom sheet (Itinerary) */
     .sheet {
       position: absolute;
       left: 0; right: 0; bottom: 0;
       z-index: 20;
-      border-radius: 44px 44px 44px 44px;
+      border-radius: 24px 24px 44px 44px;
       display: flex;
       flex-direction: column;
-      height: var(--sheet-h, 230px);
+      height: var(--sheet-h, 260px);
       transition: height 0.32s cubic-bezier(0.4,0,0.2,1);
       will-change: height;
       touch-action: none;
@@ -514,7 +364,7 @@
       backdrop-filter: blur(12px);
     }
 
-    .sheet-inner { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; }
+    .sheet-inner { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; padding-bottom: 64px; }
 
     .sheet-handle-row {
       display: flex;
@@ -599,8 +449,235 @@
     .appt-subject { font-size: 14px; font-weight: 600; color: #cbd5e1; margin-bottom: 3px; line-height: 1.3; }
     .appt-meta { font-size: 12px; color: #475569; margin-top: 2px; }
 
-    .error-banner { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; color: #f87171; font-size: 12px; }
     .loading-msg { text-align: center; padding: 24px; color: #334155; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* ── Page indicator ─────────────────────────────────────── */
+    .page-indicator {
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 92px;
+      z-index: 22;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #334155;
+      pointer-events: all;
+      cursor: pointer;
+      transition: width 0.18s, height 0.18s, background 0.18s;
+    }
+
+    .dot.active {
+      width: 8px; height: 8px;
+      background: #0ea5e9;
+    }
+
+    /* ── Persistent voice FAB ──────────────────────────────── */
+    @keyframes pulse-cyan {
+      0%,100% { box-shadow: 0 4px 12px rgba(14,165,233,0.45); }
+      50%      { box-shadow: 0 4px 22px rgba(14,165,233,0.75), 0 0 36px rgba(14,165,233,0.25); }
+    }
+
+    .fab-mic {
+      position: absolute;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: #0ea5e9;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 25;
+      animation: pulse-cyan 2.6s ease-in-out infinite;
+      transition: transform 0.12s;
+    }
+
+    .fab-mic:active { transform: translateX(-50%) scale(0.94); }
+
+    /* ── Chat overlay ──────────────────────────────────────── */
+    .chat-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      flex-direction: column;
+      justify-content: flex-end;
+      border-radius: 44px;
+      overflow: hidden;
+    }
+
+    .chat-overlay.open { display: flex; }
+
+    .chat-overlay-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 9, 16, 0.86);
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
+
+    .chat-overlay-panel {
+      position: relative;
+      z-index: 1;
+      padding: 14px 14px 22px;
+      max-height: 80%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chat-thread {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: 50vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .chat-thread::-webkit-scrollbar { width: 3px; }
+    .chat-thread::-webkit-scrollbar-track { background: transparent; }
+    .chat-thread::-webkit-scrollbar-thumb { background: #1e2a3a; border-radius: 2px; }
+    .chat-thread:empty { display: none; }
+
+    .bubble-rep {
+      align-self: flex-end;
+      background: #0d1526;
+      border: 1px solid #1e293b;
+      border-radius: 14px 14px 3px 14px;
+      padding: 10px 13px;
+      font-size: 13px;
+      color: #e2e8f0;
+      max-width: 85%;
+      line-height: 1.5;
+    }
+
+    .bubble-agent {
+      align-self: flex-start;
+      background: transparent;
+      padding: 2px 0;
+      font-size: 13px;
+      color: #cbd5e1;
+      max-width: 90%;
+      line-height: 1.55;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .bubble-agent-icon {
+      color: #0ea5e9;
+      font-size: 11px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .scheduling-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      padding-left: 19px;
+    }
+
+    @keyframes pulse-dot {
+      0%,100% { opacity: 0.3; }
+      50%      { opacity: 1; }
+    }
+
+    .sched-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #0ea5e9;
+      animation: pulse-dot 1.2s ease-in-out infinite;
+    }
+
+    .sched-dot:nth-child(2) { animation-delay: 0.2s; }
+    .sched-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    .sched-label {
+      font-size: 11px;
+      color: #475569;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .prompt-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      flex-shrink: 0;
+    }
+
+    .prompt-chips::-webkit-scrollbar { display: none; }
+
+    .chip {
+      flex-shrink: 0;
+      background: #1e293b;
+      color: #94a3b8;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.12s;
+    }
+
+    .chip:hover  { background: #334155; }
+    .chip:active { background: #334155; opacity: 0.8; }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: #0d1526;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 12px;
+      color: #e2e8f0;
+      font-size: 14px;
+      resize: none;
+      height: 48px;
+      font-family: inherit;
+      transition: border-color 0.12s;
+      overflow: hidden;
+    }
+
+    .chat-input::placeholder { color: #334155; }
+    .chat-input:focus { outline: none; border-color: #0ea5e9; }
+
+    .send-btn {
+      width: 48px; height: 48px;
+      background: #0ea5e9;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .send-btn:active { opacity: 0.7; }
   </style>
 </head>
 <body>
@@ -608,7 +685,7 @@
     <div class="island"></div>
     <div class="screen">
 
-      <!-- Header overlay (shared across states) -->
+      <!-- Header overlay (shared across all panes) -->
       <div class="header-overlay">
         <div class="status-bar">
           <span class="status-time" id="clock">9:41</span>
@@ -626,85 +703,157 @@
         </div>
       </div>
 
-      <!-- STATE 1: Home screen (default) -->
-      <div class="home-view" id="home-view">
+      <!-- Three swipeable panes (Itinerary | Home | Admin) -->
+      <div class="panes" id="panes">
 
-        <div class="cards-scroll">
+        <!-- LEFT PANE: ITINERARY -->
+        <div class="pane" id="pane-itinerary">
+          <div id="map"></div>
 
-          <!-- Greeting -->
-          <div class="greeting-section">
-            <div class="greeting" id="greeting">Good morning, Johnny</div>
+          <div class="route-empty" id="route-empty">
+            <div class="route-empty-title">No plan yet</div>
+            <div class="route-empty-sub">Ask the agent to plan your day</div>
           </div>
 
-          <!-- Card A: Daily brief -->
-          <div class="context-card">
-            <div class="card-label">A peek at your day</div>
-            <div class="brief-text loading" id="brief-text">Generating your brief…</div>
-            <div class="brief-meta" id="brief-meta"></div>
-          </div>
+          <div class="sheet" id="sheet" style="display:none;">
+            <div class="sheet-bg"></div>
+            <div class="sheet-inner">
+              <div class="sheet-handle-row">
+                <div class="drag-handle"></div>
+                <span class="sheet-today-label">Today</span>
+              </div>
 
-          <!-- Card B: Needs your attention (mock Slack) -->
-          <div class="context-card" id="card-attention">
-            <div class="card-label">Needs your attention</div>
-
-            <div class="slack-msg" id="slack-msg-0">
-              <div class="slack-avatar" style="background:#1e3a5f;color:#7dd3fc;">MR</div>
-              <div class="slack-body">
-                <div class="slack-source">From Slack</div>
-                <div class="slack-header">
-                  <span class="slack-sender">Maya R</span>
-                  <span class="slack-channel">#deals</span>
-                  <span class="slack-time">10:14 AM</span>
+              <div class="kpi-row">
+                <div class="kpi-card">
+                  <div class="kpi-label">Stops</div>
+                  <div class="kpi-value" id="kpi-stops"><em>—</em></div>
+                  <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="kpi-progress" style="width:0%"></div>
+                  </div>
                 </div>
-                <div class="slack-text">any update on Acme Industries?</div>
-                <div class="slack-reply-area" id="reply-area-0">
-                  <textarea class="reply-input" id="reply-input-0" placeholder="Reply in #deals…"></textarea>
-                  <button class="reply-send" onclick="sendReply(0)">Send to Slack</button>
+                <div class="kpi-card">
+                  <div class="kpi-label">Next</div>
+                  <div class="kpi-value" id="kpi-next"><em>—</em></div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-label">Status</div>
+                  <div class="kpi-value" id="kpi-time">
+                    <span class="time-dot"></span><em>On track</em>
+                  </div>
+                </div>
+              </div>
+
+              <div class="appt-list" id="appt-list">
+                <div class="loading-msg">Loading&hellip;</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTER PANE: HOME (default) -->
+        <div class="pane" id="pane-home">
+          <div class="cards-scroll">
+            <div class="greeting-section">
+              <div class="greeting" id="greeting">Good morning, Johnny</div>
+            </div>
+
+            <div class="context-card">
+              <div class="card-label">A peek at your day</div>
+              <div class="brief-text loading" id="brief-text">Generating your brief&hellip;</div>
+              <div class="brief-meta" id="brief-meta"></div>
+            </div>
+
+            <div class="context-card">
+              <div class="card-label">Open opps — needs follow-up</div>
+              <div id="opps-content">
+                <div class="opp-placeholder">Loading opportunities&hellip;</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT PANE: ADMIN -->
+        <div class="pane" id="pane-admin">
+          <div class="cards-scroll">
+            <div class="pane-heading">Today's todos</div>
+
+            <div class="context-card" id="card-attention">
+              <div class="card-label">Needs your attention</div>
+
+              <div class="slack-msg" id="slack-msg-0">
+                <div class="slack-avatar" style="background:#1e3a5f;color:#7dd3fc;">MR</div>
+                <div class="slack-body">
+                  <div class="slack-source">From Slack</div>
+                  <div class="slack-header">
+                    <span class="slack-sender">Maya R</span>
+                    <span class="slack-channel">#deals</span>
+                    <span class="slack-time">10:14 AM</span>
+                  </div>
+                  <div class="slack-text">any update on Acme Industries?</div>
+                  <div class="slack-reply-area" id="reply-area-0">
+                    <textarea class="reply-input" id="reply-input-0" placeholder="Reply in #deals…"></textarea>
+                    <button class="reply-send" onclick="sendReply(0)">Send to Slack</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="slack-msg" id="slack-msg-1">
+                <div class="slack-avatar" style="background:#1a3a1e;color:#86efac;">DT</div>
+                <div class="slack-body">
+                  <div class="slack-source">From Slack</div>
+                  <div class="slack-header">
+                    <span class="slack-sender">Devon T</span>
+                    <span class="slack-channel">DM</span>
+                    <span class="slack-time">9:52 AM</span>
+                  </div>
+                  <div class="slack-text">can you sign the vendor NDA before EOD?</div>
+                  <div class="slack-reply-area" id="reply-area-1">
+                    <textarea class="reply-input" id="reply-input-1" placeholder="Reply to Devon T…"></textarea>
+                    <button class="reply-send" onclick="sendReply(1)">Send to Slack</button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="slack-msg" id="slack-msg-1">
-              <div class="slack-avatar" style="background:#1a3a1e;color:#86efac;">DT</div>
-              <div class="slack-body">
-                <div class="slack-source">From Slack</div>
-                <div class="slack-header">
-                  <span class="slack-sender">Devon T</span>
-                  <span class="slack-channel">DM</span>
-                  <span class="slack-time">9:52 AM</span>
-                </div>
-                <div class="slack-text">can you sign the vendor NDA before EOD?</div>
-                <div class="slack-reply-area" id="reply-area-1">
-                  <textarea class="reply-input" id="reply-input-1" placeholder="Reply to Devon T…"></textarea>
-                  <button class="reply-send" onclick="sendReply(1)">Send to Slack</button>
-                </div>
+            <div class="context-card">
+              <div class="card-label">Follow-ups</div>
+              <div class="followup-item">
+                <div class="followup-title">Review redlines on vendor MSA</div>
+                <div class="followup-meta">Due tomorrow</div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Card C: Open opps -->
-          <div class="context-card">
-            <div class="card-label">Open opps — needs follow-up</div>
-            <div id="opps-content">
-              <div class="opp-placeholder">Loading opportunities…</div>
-            </div>
-          </div>
+      </div><!-- .panes -->
 
-        </div><!-- .cards-scroll -->
+      <!-- Page indicator (3 dots) -->
+      <div class="page-indicator">
+        <span class="dot" data-pane="0"></span>
+        <span class="dot active" data-pane="1"></span>
+        <span class="dot" data-pane="2"></span>
+      </div>
 
-        <!-- Chat thread (visible after first message) -->
-        <div class="chat-thread" id="chat-thread"></div>
+      <!-- Persistent voice FAB -->
+      <button class="fab-mic" id="fab-mic" aria-label="Voice agent">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="12" rx="3"/>
+          <path d="M19 11v1a7 7 0 0 1-14 0v-1"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="8" y1="22" x2="16" y2="22"/>
+        </svg>
+      </button>
 
-        <!-- Chat input (sticky above nav) -->
-        <div class="chat-area">
-          <div class="prompt-chips">
-            <button class="chip" onclick="fillChat('Plan my day')">Plan my day</button>
-            <button class="chip" onclick="fillChat('Log my last visit')">Log my last visit</button>
-            <button class="chip" onclick="fillChat('Catch me up on Acme Industries')">Catch me up on Acme Industries</button>
-          </div>
+      <!-- Chat overlay (FAB-driven) -->
+      <div class="chat-overlay" id="chat-overlay">
+        <div class="chat-overlay-backdrop" id="chat-overlay-backdrop"></div>
+        <div class="chat-overlay-panel">
+          <div class="chat-thread" id="chat-thread"></div>
+          <div class="prompt-chips" id="prompt-chips"></div>
           <div class="chat-input-row">
             <textarea class="chat-input" id="chat-input" placeholder="What are we doing today, Johnny?"></textarea>
-            <button class="send-btn" onclick="submitChat()">
+            <button class="send-btn" id="send-btn">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13"></line>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -712,55 +861,6 @@
             </button>
           </div>
         </div>
-
-      </div><!-- .home-view -->
-
-      <!-- STATE 3: Route view — TODO M3: set display:flex to activate -->
-      <div class="route-view" id="route-view">
-
-        <div id="map"></div>
-
-        <!-- Bottom sheet -->
-        <div class="sheet" id="sheet">
-          <div class="sheet-bg"></div>
-          <div class="sheet-inner">
-            <div class="sheet-handle-row" id="sheet-handle">
-              <div class="drag-handle"></div>
-              <span class="sheet-today-label">Today</span>
-            </div>
-
-            <div class="kpi-row" id="kpi-row">
-              <div class="kpi-card">
-                <div class="kpi-label">Stops</div>
-                <div class="kpi-value" id="kpi-stops"><em>—</em></div>
-                <div class="progress-bar-track">
-                  <div class="progress-bar-fill" id="kpi-progress" style="width:0%"></div>
-                </div>
-              </div>
-              <div class="kpi-card">
-                <div class="kpi-label">Next</div>
-                <div class="kpi-value" id="kpi-next"><em>—</em></div>
-              </div>
-              <div class="kpi-card">
-                <div class="kpi-label">Status</div>
-                <div class="kpi-value" id="kpi-time">
-                  <span class="time-dot"></span><em>On track</em>
-                </div>
-              </div>
-            </div>
-
-            <div class="appt-list" id="appt-list">
-              <div class="loading-msg">Loading&hellip;</div>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- .route-view -->
-
-      <!-- Bottom nav (always visible) -->
-      <div class="bottom-bar">
-        <button class="btn-mode btn-plan" onclick="planMyDay()">&#9671; Plan My Day</button>
-        <button class="btn-mode btn-log"  onclick="alert('Log Visit coming in M5')">&#9998; Log Visit</button>
       </div>
 
     </div><!-- .screen -->
@@ -768,7 +868,12 @@
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
   <script>
-    // ── Clock ────────────────────────────────────────────────
+    // ── Helpers ───────────────────────────────────────────────
+    function esc(s) {
+      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── Clock ─────────────────────────────────────────────────
     function updateClock() {
       const now = new Date();
       const h = now.getHours() % 12 || 12;
@@ -778,14 +883,14 @@
     updateClock();
     setInterval(updateClock, 10000);
 
-    // ── Greeting ─────────────────────────────────────────────
+    // ── Greeting ──────────────────────────────────────────────
     (function setGreeting() {
       const h = new Date().getHours();
       const part = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
       document.getElementById('greeting').textContent = `Good ${part}, Johnny`;
     })();
 
-    // ── Health check ─────────────────────────────────────────
+    // ── Health check ──────────────────────────────────────────
     async function checkHealth() {
       const dot   = document.getElementById('sf-dot');
       const label = document.getElementById('sf-label');
@@ -800,7 +905,7 @@
       }
     }
 
-    // ── Daily brief ──────────────────────────────────────────
+    // ── Daily brief ───────────────────────────────────────────
     async function fetchDailyBrief() {
       const textEl = document.getElementById('brief-text');
       const metaEl = document.getElementById('brief-meta');
@@ -821,7 +926,7 @@
       }
     }
 
-    // ── Open opps ────────────────────────────────────────────
+    // ── Open opps ─────────────────────────────────────────────
     async function fetchOpenOpps() {
       const el = document.getElementById('opps-content');
       try {
@@ -854,25 +959,23 @@
       }
     }
 
-    function esc(s) {
-      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    // ── Slack replies ────────────────────────────────────────
+    // ── Slack replies (Admin pane) ────────────────────────────
     const slackReplies = {};
 
-    document.querySelectorAll('.slack-msg').forEach(msg => {
-      msg.addEventListener('click', e => {
-        if (e.target.closest('.reply-send') || e.target.closest('.reply-input')) return;
-        const id = msg.id.replace('slack-msg-', '');
-        const area = document.getElementById(`reply-area-${id}`);
-        if (!area) return;
-        area.classList.toggle('open');
-        if (area.classList.contains('open')) {
-          area.querySelector('.reply-input').focus();
-        }
+    function bindSlackInteractions() {
+      document.querySelectorAll('.slack-msg').forEach(msg => {
+        msg.addEventListener('click', e => {
+          if (e.target.closest('.reply-send') || e.target.closest('.reply-input')) return;
+          const id = msg.id.replace('slack-msg-', '');
+          const area = document.getElementById(`reply-area-${id}`);
+          if (!area) return;
+          area.classList.toggle('open');
+          if (area.classList.contains('open')) {
+            area.querySelector('.reply-input').focus();
+          }
+        });
       });
-    });
+    }
 
     function sendReply(id) {
       const input = document.getElementById(`reply-input-${id}`);
@@ -884,36 +987,99 @@
       setTimeout(() => { msg.style.display = 'none'; }, 300);
     }
 
+    // ── Pane carousel ─────────────────────────────────────────
+    const PANE_CONFIG = {
+      0: {
+        placeholder: "Tell me about your visit…",
+        chips: ["Log this visit", "Skip this stop", "What's next?"],
+      },
+      1: {
+        placeholder: "What are we doing today, Johnny?",
+        chips: ["Plan my day", "Log my last visit", "Catch me up on Acme Industries"],
+      },
+      2: {
+        placeholder: "Reply or follow up…",
+        chips: ["Reply to Maya", "Follow up tomorrow"],
+      },
+    };
+
+    let currentPane = 1;
+    const panesEl = document.getElementById('panes');
+    const dots = document.querySelectorAll('.dot');
+
+    function setActivePane(idx) {
+      currentPane = idx;
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+
+    function goToPane(idx, smooth = true) {
+      panesEl.scrollTo({
+        left: idx * panesEl.clientWidth,
+        behavior: smooth ? 'smooth' : 'auto',
+      });
+    }
+
+    let scrollTimeout = null;
+    panesEl.addEventListener('scroll', () => {
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const idx = Math.round(panesEl.scrollLeft / panesEl.clientWidth);
+        if (idx !== currentPane) setActivePane(idx);
+      }, 60);
+    });
+
+    dots.forEach(d => {
+      d.addEventListener('click', () => {
+        const idx = parseInt(d.dataset.pane, 10);
+        goToPane(idx, true);
+      });
+    });
+
+    // ── FAB / chat overlay ────────────────────────────────────
+    const fab = document.getElementById('fab-mic');
+    const overlay = document.getElementById('chat-overlay');
+    const backdrop = document.getElementById('chat-overlay-backdrop');
+    const promptChipsEl = document.getElementById('prompt-chips');
+    const chatInput = document.getElementById('chat-input');
+
+    function renderPromptChips() {
+      const cfg = PANE_CONFIG[currentPane];
+      chatInput.placeholder = cfg.placeholder;
+      promptChipsEl.innerHTML = cfg.chips
+        .map(c => `<button class="chip" data-text="${esc(c)}">${esc(c)}</button>`)
+        .join('');
+      promptChipsEl.querySelectorAll('.chip').forEach(b => {
+        b.addEventListener('click', () => fillChat(b.dataset.text));
+      });
+    }
+
+    function openChatOverlay() {
+      renderPromptChips();
+      overlay.classList.add('open');
+      requestAnimationFrame(() => chatInput.focus());
+    }
+
+    function closeChatOverlay() {
+      overlay.classList.remove('open');
+      chatInput.value = '';
+    }
+
+    fab.addEventListener('click', openChatOverlay);
+    backdrop.addEventListener('click', closeChatOverlay);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) closeChatOverlay();
+    });
+
     // ── Chat state ────────────────────────────────────────────
     let chatHistory = [];
-    let chatBusy    = false;
+    let chatBusy = false;
     let schedulingIndicatorEl = null;
     let thinkingBubbleEl = null;
     let currentRunId = null;
 
     function fillChat(text) {
-      const input = document.getElementById('chat-input');
-      input.value = text;
-      input.focus();
-    }
-
-    function planMyDay() {
-      const input = document.getElementById('chat-input');
-      input.value = 'Plan my day';
-      submitChat();
-    }
-
-    function activateChatMode() {
-      // Fade context cards up
-      const scroll = document.querySelector('.cards-scroll');
-      scroll.style.transition = 'opacity 0.3s, transform 0.3s';
-      scroll.style.opacity = '0';
-      scroll.style.transform = 'translateY(-12px)';
-      setTimeout(() => { scroll.style.display = 'none'; }, 300);
-
-      // Show thread
-      const thread = document.getElementById('chat-thread');
-      thread.classList.add('active');
+      chatInput.value = text;
+      chatInput.focus();
     }
 
     function appendRepMessage(text) {
@@ -965,13 +1131,6 @@
       thread.scrollTop = thread.scrollHeight;
     }
 
-    function removeThinkingBubble() {
-      if (thinkingBubbleEl) {
-        thinkingBubbleEl.remove();
-        thinkingBubbleEl = null;
-      }
-    }
-
     function showSchedulingIndicator() {
       const thread = document.getElementById('chat-thread');
       const el = document.createElement('div');
@@ -995,25 +1154,22 @@
       }
     }
 
+    function setBusy(busy) {
+      chatBusy = busy;
+      chatInput.disabled = busy;
+      document.getElementById('send-btn').disabled = busy;
+    }
+
     async function submitChat() {
-      const input = document.getElementById('chat-input');
-      const val = (input.value || '').trim();
+      const val = (chatInput.value || '').trim();
       if (!val || chatBusy) return;
-      chatBusy = true;
+      setBusy(true);
 
-      input.value = '';
-      input.disabled = true;
-      document.querySelector('.send-btn').disabled = true;
-
-      if (!document.getElementById('chat-thread').classList.contains('active')) {
-        activateChatMode();
-      }
-
+      chatInput.value = '';
       appendRepMessage(val);
       showThinkingBubble();
 
-      // Yield a frame so the rep bubble + Thinking… placeholder paint
-      // before we kick off the network request.
+      // Yield a frame so bubbles paint before fetch starts.
       await new Promise(requestAnimationFrame);
 
       try {
@@ -1025,9 +1181,7 @@
 
         if (!res.ok) {
           replaceThinkingBubble('Something went wrong. Please try again.');
-          chatBusy = false;
-          input.disabled = false;
-          document.querySelector('.send-btn').disabled = false;
+          setBusy(false);
           return;
         }
 
@@ -1035,10 +1189,8 @@
 
         if (res.status === 'clarifying') {
           replaceThinkingBubble(res.message);
-          chatBusy = false;
-          input.disabled = false;
-          document.querySelector('.send-btn').disabled = false;
-          input.focus();
+          setBusy(false);
+          chatInput.focus();
           return;
         }
 
@@ -1047,16 +1199,22 @@
           replaceThinkingBubble(res.message);
           showSchedulingIndicator();
           await pollForAppointments(res.appointmentIds || []);
+
+          // Auto-swipe to Itinerary, close overlay, reset chat for next session.
+          goToPane(0, true);
+          closeChatOverlay();
+          chatHistory = [];
+          document.getElementById('chat-thread').innerHTML = '';
+          setBusy(false);
         }
       } catch (err) {
         replaceThinkingBubble('Network error — check that the server is running.');
-        chatBusy = false;
-        input.disabled = false;
-        document.querySelector('.send-btn').disabled = false;
+        setBusy(false);
       }
     }
 
-    document.getElementById('chat-input').addEventListener('keydown', e => {
+    document.getElementById('send-btn').addEventListener('click', submitChat);
+    chatInput.addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         submitChat();
@@ -1094,38 +1252,20 @@
 
         if (allHaveCoords || timedOut) {
           removeSchedulingIndicator();
-          activateRouteView(valid);
+          populateItinerary(valid);
           return;
         }
       }
     }
 
-    // ── Route view activation ─────────────────────────────────
+    // ── Itinerary (map mounts once on page load) ──────────────
     const REP_COORD = [-122.4194, 37.7749];
     let map = null;
+    let mapReady = false;
+    let pendingItinerary = null;
+    let apptMarkers = [];
 
-    function activateRouteView(appointments) {
-      const homeView  = document.getElementById('home-view');
-      const routeView = document.getElementById('route-view');
-
-      homeView.style.transition  = 'opacity 0.3s';
-      homeView.style.opacity     = '0';
-      setTimeout(() => {
-        homeView.style.display   = 'none';
-        routeView.style.display  = 'flex';
-        routeView.style.opacity  = '0';
-        routeView.style.transition = 'opacity 0.3s';
-        requestAnimationFrame(() => {
-          routeView.style.opacity = '1';
-          initRouteMap(appointments);
-          renderAppointmentList(appointments);
-        });
-      }, 300);
-    }
-
-    function initRouteMap(appointments) {
-      if (map) { map.remove(); map = null; }
-
+    function initRouteMap() {
       fetch('/api/config').then(r => r.json()).then(cfg => {
         mapboxgl.accessToken = cfg.mapboxToken;
         map = new mapboxgl.Map({
@@ -1136,40 +1276,58 @@
         });
 
         map.on('load', () => {
-          // Rep pin
           new mapboxgl.Marker({ color: '#0ea5e9' })
             .setLngLat(REP_COORD)
             .setPopup(new mapboxgl.Popup({ offset: 12 }).setText('You'))
             .addTo(map);
-
-          const bounds = new mapboxgl.LngLatBounds(REP_COORD, REP_COORD);
-
-          appointments.forEach((appt, i) => {
-            const lat = appt.FSL__InternalSLRGeolocation__Latitude__s;
-            const lng = appt.FSL__InternalSLRGeolocation__Longitude__s;
-
-            let coord;
-            if (lat != null && lng != null) {
-              coord = [lng, lat];
-            } else {
-              // Graceful fallback: small offset from rep
-              coord = [REP_COORD[0] + (i * 0.002), REP_COORD[1] + (i * 0.002)];
-            }
-
-            const label = (appt.Account && appt.Account.Name) || appt.Subject || `Stop ${i + 1}`;
-            const tooltip = (lat == null || lng == null) ? '...' : label;
-
-            new mapboxgl.Marker({ color: '#6366f1' })
-              .setLngLat(coord)
-              .setPopup(new mapboxgl.Popup({ offset: 12 }).setText(tooltip))
-              .addTo(map);
-
-            bounds.extend(coord);
-          });
-
-          map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
+          mapReady = true;
+          if (pendingItinerary) {
+            const a = pendingItinerary;
+            pendingItinerary = null;
+            populateItinerary(a);
+          }
         });
       });
+    }
+
+    function populateItinerary(appts) {
+      if (!mapReady) {
+        pendingItinerary = appts;
+        return;
+      }
+
+      document.getElementById('route-empty').classList.add('hidden');
+      document.getElementById('sheet').style.display = 'flex';
+
+      apptMarkers.forEach(m => m.remove());
+      apptMarkers = [];
+
+      const bounds = new mapboxgl.LngLatBounds(REP_COORD, REP_COORD);
+
+      appts.forEach((appt, i) => {
+        const lat = appt.FSL__InternalSLRGeolocation__Latitude__s;
+        const lng = appt.FSL__InternalSLRGeolocation__Longitude__s;
+
+        let coord;
+        if (lat != null && lng != null) {
+          coord = [lng, lat];
+        } else {
+          coord = [REP_COORD[0] + (i * 0.002), REP_COORD[1] + (i * 0.002)];
+        }
+
+        const label = (appt.Account && appt.Account.Name) || appt.Subject || `Stop ${i + 1}`;
+        const tooltip = (lat == null || lng == null) ? '...' : label;
+
+        const m = new mapboxgl.Marker({ color: '#6366f1' })
+          .setLngLat(coord)
+          .setPopup(new mapboxgl.Popup({ offset: 12 }).setText(tooltip))
+          .addTo(map);
+        apptMarkers.push(m);
+        bounds.extend(coord);
+      });
+
+      map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
+      renderAppointmentList(appts);
     }
 
     function renderAppointmentList(appointments) {
@@ -1191,7 +1349,7 @@
       }
 
       apptList.innerHTML = appointments.map((a, i) => {
-        const statusKey  = (a.Status || '').toLowerCase().replace(/\s+/g, '-');
+        const statusKey   = (a.Status || '').toLowerCase().replace(/\s+/g, '-');
         const accountName = esc((a.Account && a.Account.Name) || a.Subject || '—');
         const addr = [a.Street, a.City, a.State].filter(Boolean).map(esc).join(', ') || 'Address pending';
         const timeStr = a.SchedStartTime
@@ -1213,11 +1371,28 @@
       }).join('');
     }
 
-    // ── Init ─────────────────────────────────────────────────
+    // ── Init ──────────────────────────────────────────────────
     async function init() {
+      // Lock initial scroll position to Home (center pane).
+      // Single rAF yield so layout settles; instant set, no smooth animation.
+      requestAnimationFrame(() => {
+        panesEl.scrollLeft = panesEl.clientWidth;
+        setActivePane(1);
+      });
+
+      bindSlackInteractions();
+
       await checkHealth();
       fetchDailyBrief();
       fetchOpenOpps();
+      initRouteMap();
+
+      // Pre-populate Itinerary if there are existing SAs from today.
+      try {
+        const data = await fetch('/api/appointments').then(r => r.json());
+        const appts = (data.appointments || []).filter(a => a.Status !== 'Cancelled');
+        if (appts.length) populateItinerary(appts);
+      } catch (_) {}
     }
 
     init();
