@@ -7,31 +7,30 @@
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
   <style>
     :root {
-      /* Surfaces — warm dark */
-      --surface-base:     #1a1612;
-      --surface-raised:   #25201a;
-      --surface-elevated: #322a22;
-      --surface-paper:    #d4c9a8;
+      /* Surfaces — pure dark, computer-room-at-night */
+      --surface-base:     #050608;
+      --surface-raised:   #0a0c10;
+      --surface-elevated: #0f1218;
 
       /* Text */
-      --ink-primary:   #e8dfc6;
-      --ink-muted:     #a89878;
-      --ink-faint:     #5a4f3e;
-      --ink-dark:      #2a2618;
+      --ink-primary:   #d8e4dc;   /* cool off-white, slight green tint */
+      --ink-muted:     #6b7a72;
+      --ink-faint:     #3a443e;
 
       /* Accents */
       --crt-green:     #33ff66;   /* primary action — phosphor */
       --crt-glow:      rgba(51, 255, 102, 0.5);
-      --amber:         #d4a845;
+      --amber:         #d4a845;   /* warnings / timestamps only */
       --y2k-cyan:      #00d4ff;
       --chrome:        #b8c0cc;
+      --synthwave:     #ff2d92;   /* hot magenta — warnings / absences */
       --terminal-green:#33ff33;
 
       /* Status */
-      --status-go:     #7fb89b;
+      --status-go:     #33ff66;
       --status-warn:   #d4a845;
-      --status-stop:   #c8704a;
-      --status-idle:   #5a4f3e;
+      --status-stop:   #ff2d92;
+      --status-idle:   #3a443e;
 
       /* Type */
       --font-mono:  'IBM Plex Mono', 'JetBrains Mono', 'Cascadia Code', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -59,7 +58,7 @@
       pointer-events: none;
       z-index: 9999;
       mix-blend-mode: overlay;
-      opacity: 0.04;
+      opacity: 0.02;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.92 0 0 0 0 0.86 0 0 0 0 0.7 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
@@ -70,7 +69,7 @@
       background: #000;
       border-radius: 55px;
       padding: 12px;
-      box-shadow: 0 40px 80px rgba(0,0,0,0.85), inset 0 0 0 1px #2a2618;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.85), inset 0 0 0 1px #0a0c10;
       display: flex;
       flex-direction: column;
       position: relative;
@@ -83,7 +82,7 @@
       border-radius: 20px;
       margin: 0 auto 8px;
       flex-shrink: 0;
-      border: 2px solid #1a1612;
+      border: 2px solid #0a0c10;
       position: relative;
       z-index: 30;
     }
@@ -251,7 +250,7 @@
       position: absolute;
       inset: 0;
       overflow-y: auto;
-      padding: 132px 14px 150px;
+      padding: 132px 14px 180px;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -530,15 +529,62 @@
       border-radius: 44px;
     }
 
-    /* Rep map marker — Y2K cyan dot inside chrome ring */
+    /* Rep map marker — chunky Y2K cyan crosshair */
     .rep-marker {
+      width: 24px;
+      height: 24px;
+      position: relative;
+      cursor: pointer;
+      filter: drop-shadow(0 0 8px var(--y2k-cyan))
+              drop-shadow(0 0 14px rgba(0, 212, 255, 0.4));
+    }
+    .rep-marker::before,
+    .rep-marker::after {
+      content: '';
+      position: absolute;
+      background: var(--y2k-cyan);
+    }
+    .rep-marker::before {
+      /* horizontal bar */
+      left: 0; right: 0;
+      top: 50%;
+      height: 2px;
+      transform: translateY(-50%);
+    }
+    .rep-marker::after {
+      /* vertical bar */
+      top: 0; bottom: 0;
+      left: 50%;
+      width: 2px;
+      transform: translateX(-50%);
+    }
+
+    /* Stop markers — outlined phosphor square w/ stop number */
+    .stop-marker {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--crt-green);
+      background: rgba(5, 6, 8, 0.55);
+      color: var(--crt-green);
+      font-family: var(--font-stamp);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0;
+      line-height: 18px;
+      text-align: center;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(51, 255, 102, 0.5),
+                  inset 0 0 4px rgba(51, 255, 102, 0.2);
+    }
+
+    /* Absence markers — small magenta filled square */
+    .absence-marker {
       width: 16px;
       height: 16px;
-      border-radius: 50%;
-      background: var(--y2k-cyan);
-      border: 2px solid var(--chrome);
-      box-shadow: 0 0 8px rgba(0, 212, 255, 0.7),
-                  0 0 16px rgba(0, 212, 255, 0.25);
+      background: var(--synthwave);
+      border: 2px solid var(--synthwave);
+      box-shadow: 0 0 8px rgba(255, 45, 146, 0.55);
       cursor: pointer;
     }
 
@@ -803,6 +849,21 @@
       font-family: var(--font-stamp);
     }
 
+    /* Solid panel that occludes cards-scroll content beneath the
+       page indicator + FAB — prevents bleed-through on tall content. */
+    .nav-pad {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 160px;
+      z-index: 18;
+      pointer-events: none;
+      background: linear-gradient(
+        to top,
+        var(--surface-base) 60%,
+        rgba(0, 0, 0, 0)    100%
+      );
+    }
+
     /* ── Page indicator — labeled segments ───────────────── */
     .page-indicator {
       position: absolute;
@@ -931,18 +992,19 @@
     .chat-thread::-webkit-scrollbar-thumb { background: var(--ink-faint); }
     .chat-thread:empty { display: none; }
 
-    /* Rep — paper / dot-matrix print */
+    /* Rep — Y2K input, deep slate with cyan border */
     .bubble-rep {
       align-self: flex-end;
-      background: var(--surface-paper);
-      border: 2px solid var(--ink-faint);
+      background: var(--surface-elevated);
+      border: 2px solid var(--y2k-cyan);
       border-radius: 0;
       padding: 10px 13px;
       font-size: 13px;
-      color: var(--ink-dark);
+      color: var(--ink-primary);
       max-width: 85%;
       line-height: 1.5;
       font-family: var(--font-mono);
+      box-shadow: 0 0 6px rgba(0, 212, 255, 0.25);
     }
 
     /* Agent — phosphor terminal */
@@ -1242,6 +1304,9 @@
         </div>
 
       </div><!-- .panes -->
+
+      <!-- Solid fade behind indicator + FAB — occludes content beneath -->
+      <div class="nav-pad"></div>
 
       <!-- Page indicator (labeled segments) -->
       <div class="page-indicator">
@@ -1759,7 +1824,12 @@
         const label = (appt.Account && appt.Account.Name) || appt.Subject || `Stop ${i + 1}`;
         const tooltip = (lat == null || lng == null) ? '...' : label;
 
-        const m = new mapboxgl.Marker({ color: '#7fb89b' })
+        // Chunky bitmap-style stop marker: outlined phosphor square + stop number
+        const stopEl = document.createElement('div');
+        stopEl.className = 'stop-marker';
+        stopEl.textContent = String(i + 1);
+
+        const m = new mapboxgl.Marker({ element: stopEl })
           .setLngLat(coord)
           .setPopup(new mapboxgl.Popup({ offset: 12 }).setText(tooltip))
           .addTo(map);
