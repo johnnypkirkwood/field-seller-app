@@ -6,15 +6,60 @@
   <title>Field Agent</title>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
   <style>
+    :root {
+      /* Surfaces — warm dark */
+      --surface-base:     #1a1612;
+      --surface-raised:   #25201a;
+      --surface-elevated: #322a22;
+      --surface-paper:    #d4c9a8;
+
+      /* Text */
+      --ink-primary:   #e8dfc6;
+      --ink-muted:     #a89878;
+      --ink-faint:     #5a4f3e;
+      --ink-dark:      #2a2618;
+
+      /* Accents */
+      --crt-green:     #7fb89b;
+      --amber:         #d4a845;
+      --rust:          #c8704a;
+      --rose:          #c89090;
+      --terminal-green:#33ff33;
+
+      /* Status */
+      --status-go:     #7fb89b;
+      --status-warn:   #d4a845;
+      --status-stop:   #c8704a;
+      --status-idle:   #5a4f3e;
+
+      /* Type */
+      --font-mono:  'IBM Plex Mono', 'JetBrains Mono', 'Cascadia Code', ui-monospace, 'SF Mono', Menlo, monospace;
+      --font-stamp: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #060910;
+      background: #08060c;
+      color: var(--ink-primary);
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif;
+      font-family: var(--font-mono);
+      font-feature-settings: "tnum" 1;
+    }
+
+    /* Film grain — fixed overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      mix-blend-mode: overlay;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.92 0 0 0 0 0.86 0 0 0 0 0.7 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
     /* ── Phone chassis ─────────────────────────────────────── */
@@ -24,7 +69,7 @@
       background: #000;
       border-radius: 55px;
       padding: 12px;
-      box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 0 0 1px #333;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.85), inset 0 0 0 1px #2a2618;
       display: flex;
       flex-direction: column;
       position: relative;
@@ -37,28 +82,29 @@
       border-radius: 20px;
       margin: 0 auto 8px;
       flex-shrink: 0;
-      border: 2px solid #222;
+      border: 2px solid #1a1612;
       position: relative;
       z-index: 30;
     }
 
     .screen {
       flex: 1;
-      background: #0a0e1a;
+      background: var(--surface-base);
       border-radius: 44px;
       overflow: hidden;
       position: relative;
       display: block;
     }
 
-    /* ── Header overlay (shared across panes) ──────────────── */
+    /* ── Header overlay ──────────────────────────────────── */
     .header-overlay {
       position: absolute;
       top: 0; left: 0; right: 0;
       z-index: 10;
-      padding: 14px 20px 12px;
-      background: linear-gradient(to bottom, rgba(10,14,26,0.98) 70%, transparent);
+      padding: 14px 20px 10px;
+      background: var(--surface-base);
       border-radius: 44px 44px 0 0;
+      border-bottom: 2px solid var(--ink-faint);
       pointer-events: none;
     }
 
@@ -66,13 +112,17 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
     }
 
-    .status-time { font-variant-numeric: tabular-nums; color: #e2e8f0; }
-    .status-icons { font-size: 11px; color: #475569; display: flex; gap: 6px; }
+    .status-time { font-variant-numeric: tabular-nums; color: var(--ink-primary); }
+    .status-icons { font-size: 10px; color: var(--ink-faint); display: flex; gap: 6px; }
 
     .brand-row {
       display: flex;
@@ -80,21 +130,22 @@
       justify-content: space-between;
     }
 
-    .brand-mark { display: flex; flex-direction: column; gap: 2px; }
+    .brand-mark { display: flex; flex-direction: column; gap: 3px; }
 
     .brand-name {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 700;
-      letter-spacing: 0.13em;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: #e2e8f0;
+      color: var(--ink-primary);
+      font-family: var(--font-stamp);
     }
 
     .brand-sub {
-      font-size: 9px;
-      font-family: 'SF Mono', ui-monospace, monospace;
-      letter-spacing: 0.08em;
-      color: #0ea5e9;
+      font-size: 8px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.14em;
+      color: var(--rust);
       text-transform: uppercase;
     }
 
@@ -102,29 +153,30 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 10px;
-      font-weight: 600;
-      color: #64748b;
-      letter-spacing: 0.05em;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       pointer-events: all;
+      font-family: var(--font-stamp);
     }
 
     .sf-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #334155;
+      width: 8px; height: 8px;
+      background: var(--ink-faint);
       flex-shrink: 0;
     }
 
-    @keyframes pulse-green {
-      0%,100% { box-shadow: 0 0 4px #22c55e; }
-      50%      { box-shadow: 0 0 10px #22c55e, 0 0 18px rgba(34,197,94,0.3); }
+    @keyframes crt-blink {
+      0%, 49%   { opacity: 1; }
+      50%, 100% { opacity: 0.32; }
     }
-    .sf-dot.connected    { background: #22c55e; animation: pulse-green 2.5s ease-in-out infinite; }
-    .sf-dot.disconnected { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
 
-    /* ── Panes carousel ────────────────────────────────────── */
+    .sf-dot.connected    { background: var(--status-go);   animation: crt-blink 2s steps(2) infinite; }
+    .sf-dot.disconnected { background: var(--status-stop); }
+
+    /* ── Panes carousel ──────────────────────────────────── */
     .panes {
       display: flex;
       width: 100%;
@@ -145,185 +197,322 @@
       position: relative;
     }
 
-    /* ── Cards-scroll (Home + Admin) ───────────────────────── */
     .cards-scroll {
       position: absolute;
       inset: 0;
       overflow-y: auto;
-      padding: 82px 14px 120px;
+      padding: 96px 14px 150px;
       -webkit-overflow-scrolling: touch;
     }
 
     .cards-scroll::-webkit-scrollbar { width: 3px; }
     .cards-scroll::-webkit-scrollbar-track { background: transparent; }
-    .cards-scroll::-webkit-scrollbar-thumb { background: #1e2a3a; border-radius: 2px; }
+    .cards-scroll::-webkit-scrollbar-thumb { background: var(--ink-faint); }
 
     /* Greeting */
     .greeting-section { margin-bottom: 18px; }
 
     .greeting {
-      font-size: 26px;
+      font-size: 22px;
       font-weight: 700;
-      color: #f1f5f9;
-      letter-spacing: -0.02em;
+      color: var(--ink-primary);
+      letter-spacing: 0.05em;
       line-height: 1.2;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
     }
 
-    /* Pane heading (Admin only) */
-    .pane-heading {
+    /* Section dash heading (Admin pane top-of-list) */
+    .section-dash {
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: #475569;
+      color: var(--ink-muted);
       margin: 0 2px 14px;
+      font-family: var(--font-stamp);
     }
 
-    /* Context cards */
+    /* Cards — flat surfaces, sharp corners */
     .context-card {
-      background: #0d1526;
-      border: 1px solid #1e293b;
-      border-radius: 4px;
+      background: var(--surface-elevated);
+      border: 2px solid var(--ink-faint);
+      border-radius: 0;
       padding: 14px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 12px;
+      font-family: var(--font-stamp);
+    }
+
+    /* Form-row pattern (used everywhere a label/value pairing appears) */
+    .form-label {
       font-size: 9px;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: #475569;
-      margin-bottom: 10px;
+      color: var(--ink-muted);
+      margin-bottom: 4px;
+      font-family: var(--font-stamp);
+    }
+
+    .form-value {
+      font-size: 13px;
+      color: var(--ink-primary);
+      line-height: 1.5;
     }
 
     /* Brief card */
     .brief-text {
       font-size: 13px;
-      color: #cbd5e1;
-      line-height: 1.65;
+      color: var(--ink-primary);
+      line-height: 1.7;
     }
-
-    .brief-text.loading { color: #334155; font-style: italic; }
-
+    .brief-text.loading {
+      color: var(--ink-faint);
+      font-family: var(--font-stamp);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
     .brief-meta {
-      font-size: 10px;
-      color: #334155;
-      margin-top: 8px;
-      letter-spacing: 0.04em;
+      font-size: 9px;
+      color: var(--ink-faint);
+      margin-top: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
     }
 
-    /* Slack card */
+    /* Slack messages — form-row aesthetic */
     .slack-msg {
       display: flex;
       gap: 10px;
-      padding: 8px 0;
+      padding: 12px 0;
       cursor: pointer;
       transition: opacity 0.3s;
     }
-
-    .slack-msg + .slack-msg { border-top: 1px solid #0f1e33; }
+    .slack-msg + .slack-msg { border-top: 1px solid var(--ink-faint); }
     .slack-msg.fading { opacity: 0; }
 
-    .slack-source {
-      font-size: 8px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #475569;
-      margin-bottom: 4px;
-    }
-
     .slack-avatar {
-      width: 32px; height: 32px;
-      border-radius: 6px;
+      width: 30px; height: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
+      letter-spacing: 0.06em;
       flex-shrink: 0;
+      background: var(--surface-base);
+      border: 2px solid var(--ink-faint);
+      color: var(--ink-primary);
+      font-family: var(--font-stamp);
     }
 
     .slack-body { flex: 1; min-width: 0; }
 
+    .slack-source {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 3px;
+      font-family: var(--font-stamp);
+    }
+
     .slack-header {
       display: flex;
       align-items: baseline;
-      gap: 6px;
-      margin-bottom: 3px;
+      gap: 8px;
+      margin-bottom: 6px;
     }
 
-    .slack-sender { font-size: 13px; font-weight: 700; color: #e2e8f0; }
-    .slack-channel { font-size: 11px; color: #475569; }
-    .slack-time { font-size: 10px; color: #334155; margin-left: auto; }
-    .slack-text { font-size: 13px; color: #94a3b8; line-height: 1.4; }
+    .slack-sender {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
+    }
+
+    .slack-channel {
+      font-size: 10px;
+      color: var(--ink-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .slack-time {
+      font-size: 9px;
+      color: var(--ink-faint);
+      margin-left: auto;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
+    }
+
+    .slack-text {
+      font-size: 13px;
+      color: var(--ink-primary);
+      line-height: 1.5;
+    }
 
     .slack-reply-area { margin-top: 10px; display: none; }
     .slack-reply-area.open { display: block; }
 
     .reply-input {
       width: 100%;
-      background: #060d1a;
-      border: 1px solid #1e293b;
-      border-radius: 4px;
+      background: var(--surface-base);
+      border: 2px solid var(--ink-faint);
+      border-radius: 0;
       padding: 8px 10px;
-      color: #e2e8f0;
+      color: var(--ink-primary);
       font-size: 12px;
       resize: none;
       height: 60px;
-      font-family: inherit;
+      font-family: var(--font-mono);
     }
-
-    .reply-input:focus { outline: none; border-color: #0ea5e9; }
+    .reply-input:focus { outline: none; border-color: var(--rust); }
 
     .reply-send {
-      margin-top: 6px;
-      padding: 6px 14px;
-      background: #0ea5e9;
-      color: #fff;
-      border: none;
-      border-radius: 3px;
-      font-size: 12px;
-      font-weight: 600;
+      margin-top: 8px;
+      padding: 8px 14px;
+      background: var(--rust);
+      color: var(--ink-primary);
+      border: 2px solid var(--rust);
+      border-radius: 0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
       cursor: pointer;
-      font-family: inherit;
+      font-family: var(--font-stamp);
+      text-transform: uppercase;
+    }
+    .reply-send:active {
+      background: var(--surface-base);
+      color: var(--rust);
     }
 
-    .reply-send:active { opacity: 0.8; }
-
-    /* Open opps card */
+    /* Open opps — form rows */
     .opp-item {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      padding: 8px 0;
+      padding: 10px 0;
+    }
+    .opp-item + .opp-item { border-top: 1px solid var(--ink-faint); }
+
+    .opp-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      margin-bottom: 3px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
+    }
+    .opp-account {
+      font-size: 11px;
+      color: var(--ink-muted);
+      letter-spacing: 0.04em;
     }
 
-    .opp-item + .opp-item { border-top: 1px solid #0f1e33; }
-
-    .opp-name { font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 2px; }
-    .opp-account { font-size: 11px; color: #475569; }
-
     .opp-right { text-align: right; flex-shrink: 0; margin-left: 10px; }
-    .opp-amount { font-size: 13px; font-weight: 600; color: #38bdf8; }
-    .opp-stale { font-size: 10px; color: #f59e0b; margin-top: 2px; }
+    .opp-amount {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--rust);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      font-family: var(--font-stamp);
+    }
+    .opp-stale {
+      font-size: 9px;
+      color: var(--amber);
+      margin-top: 4px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
+    }
 
-    .opp-placeholder { font-size: 12px; color: #334155; font-style: italic; }
+    .opp-placeholder {
+      font-size: 11px;
+      color: var(--ink-faint);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
+    }
 
-    /* Follow-up stub (Admin) */
-    .followup-item { padding: 8px 0; }
-    .followup-item + .followup-item { border-top: 1px solid #0f1e33; }
-    .followup-title { font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 2px; }
-    .followup-meta  { font-size: 10px; color: #475569; }
+    /* Follow-up rows */
+    .followup-item { padding: 10px 0; }
+    .followup-item + .followup-item { border-top: 1px solid var(--ink-faint); }
+    .followup-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      margin-bottom: 4px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
+    }
+    .followup-meta {
+      font-size: 9px;
+      color: var(--amber);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
+    }
 
-    /* ── Itinerary pane ────────────────────────────────────── */
+    /* ── Itinerary pane ──────────────────────────────────── */
     #map {
       position: absolute;
       inset: 0;
       border-radius: 44px;
     }
 
+    /* Live-activity terminal readout (top of pane) */
+    .terminal-readout {
+      position: absolute;
+      top: 96px;
+      left: 14px; right: 14px;
+      z-index: 6;
+      background: var(--surface-base);
+      border: 2px solid var(--terminal-green);
+      padding: 8px 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--terminal-green);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-shadow: 0 0 4px rgba(51, 255, 51, 0.55);
+      display: none;
+      align-items: center;
+      gap: 12px;
+    }
+    .terminal-readout.active { display: flex; }
+
+    .terminal-dot {
+      width: 8px; height: 8px;
+      background: var(--terminal-green);
+      box-shadow: 0 0 6px var(--terminal-green);
+      animation: crt-blink 1.4s steps(2) infinite;
+      flex-shrink: 0;
+    }
+
+    .terminal-label  { opacity: 0.7; font-weight: 700; flex-shrink: 0; }
+    .terminal-value  { flex: 1; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .terminal-suffix { font-weight: 700; flex-shrink: 0; }
+
+    /* Empty-route plaque */
     .route-empty {
       position: absolute;
       top: 50%; left: 50%;
@@ -331,25 +520,37 @@
       text-align: center;
       z-index: 5;
       pointer-events: none;
-      padding: 16px 24px;
-      background: rgba(10, 14, 26, 0.88);
-      border: 1px solid #1e293b;
-      border-radius: 4px;
+      padding: 16px 22px;
+      background: var(--surface-base);
+      border: 2px solid var(--ink-faint);
+      max-width: 78%;
+    }
+    .route-empty.hidden { display: none; }
+    .route-empty-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      letter-spacing: 0.18em;
+      margin-bottom: 6px;
+      font-family: var(--font-stamp);
+      text-transform: uppercase;
+    }
+    .route-empty-sub {
+      font-size: 10px;
+      color: var(--ink-muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
     }
 
-    .route-empty.hidden { display: none; }
-    .route-empty-title  { font-size: 13px; font-weight: 700; color: #cbd5e1; letter-spacing: 0.04em; margin-bottom: 4px; }
-    .route-empty-sub    { font-size: 11px; color: #475569; letter-spacing: 0.04em; }
-
-    /* Bottom sheet (Itinerary) */
+    /* Bottom sheet */
     .sheet {
       position: absolute;
       left: 0; right: 0; bottom: 0;
       z-index: 20;
-      border-radius: 24px 24px 44px 44px;
       display: flex;
       flex-direction: column;
-      height: var(--sheet-h, 260px);
+      height: var(--sheet-h, 290px);
       transition: height 0.32s cubic-bezier(0.4,0,0.2,1);
       will-change: height;
       touch-action: none;
@@ -358,153 +559,252 @@
     .sheet-bg {
       position: absolute;
       inset: 0;
-      background: rgba(10, 14, 26, 0.97);
-      border-top: 1px solid #1e293b;
-      border-radius: 24px 24px 44px 44px;
-      backdrop-filter: blur(12px);
+      background: var(--surface-base);
+      border-top: 2px solid var(--ink-faint);
+      border-radius: 0 0 44px 44px;
     }
 
-    .sheet-inner { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; padding-bottom: 64px; }
+    .sheet-inner { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; padding-bottom: 110px; }
 
     .sheet-handle-row {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 10px 0 6px;
+      padding: 10px 0 8px;
       cursor: grab;
       flex-shrink: 0;
     }
-
     .sheet-handle-row:active { cursor: grabbing; }
 
-    .drag-handle { width: 36px; height: 4px; background: #1e293b; border-radius: 2px; margin-bottom: 6px; }
+    .drag-handle { width: 36px; height: 3px; background: var(--ink-faint); margin-bottom: 6px; }
 
     .sheet-today-label {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: #334155;
+      color: var(--ink-muted);
+      font-family: var(--font-stamp);
     }
 
-    .kpi-row { display: flex; gap: 8px; padding: 0 14px 10px; flex-shrink: 0; }
+    .kpi-row {
+      display: flex;
+      gap: 0;
+      padding: 6px 14px 12px;
+      flex-shrink: 0;
+      border-bottom: 2px solid var(--ink-faint);
+      margin-bottom: 8px;
+    }
 
     .kpi-card {
       flex: 1;
-      background: #0d1526;
-      border-radius: 4px;
-      padding: 8px 10px;
-      border: 1px solid #1e293b;
+      background: transparent;
+      padding: 4px 10px;
       min-width: 0;
+      border-right: 1px solid var(--ink-faint);
     }
+    .kpi-card:last-child { border-right: none; }
 
-    .kpi-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #334155; margin-bottom: 4px; }
-    .kpi-value { font-size: 12px; font-weight: 700; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .kpi-value em { font-style: normal; color: #e2e8f0; }
+    .kpi-label {
+      font-size: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--ink-faint);
+      margin-bottom: 4px;
+      font-family: var(--font-stamp);
+    }
+    .kpi-value {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-variant-numeric: tabular-nums;
+      font-family: var(--font-stamp);
+    }
+    .kpi-value em { font-style: normal; color: var(--ink-primary); }
 
-    .progress-bar-track { height: 3px; background: #1e293b; border-radius: 2px; margin-top: 5px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: #0ea5e9; border-radius: 2px; transition: width 0.4s ease; }
+    .progress-bar-track { height: 3px; background: var(--ink-faint); margin-top: 6px; }
+    .progress-bar-fill { height: 100%; background: var(--rust); transition: width 0.4s ease; }
 
-    .time-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #22c55e; margin-right: 5px; vertical-align: middle; }
+    .time-block {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--status-go);
+      margin-right: 6px;
+      vertical-align: middle;
+    }
 
     .appt-list { flex: 1; overflow-y: auto; padding: 0 14px 12px; -webkit-overflow-scrolling: touch; }
     .appt-list::-webkit-scrollbar { width: 3px; }
     .appt-list::-webkit-scrollbar-track { background: transparent; }
-    .appt-list::-webkit-scrollbar-thumb { background: #1e2a3a; border-radius: 2px; }
+    .appt-list::-webkit-scrollbar-thumb { background: var(--ink-faint); }
 
-    .section-label { font-size: 10px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.14em; margin: 4px 2px 8px; }
+    .appt-card {
+      background: var(--surface-elevated);
+      border: 2px solid var(--ink-faint);
+      border-left-width: 4px;
+      border-radius: 0;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .appt-card.status-scheduled   { border-left-color: var(--rust); }
+    .appt-card.status-in-progress { border-left-color: var(--amber); }
+    .appt-card.status-completed   { border-left-color: var(--status-go); }
+    .appt-card.status-cancelled   { border-left-color: var(--status-stop); }
+    .appt-card.status-none        { border-left-color: var(--ink-faint); }
 
-    .appt-card { background: #0d1526; border-radius: 4px; border-left: 3px solid #1e3a5f; padding: 10px 12px; margin-bottom: 7px; }
-    .appt-card.status-scheduled   { border-left-color: #0ea5e9; }
-    .appt-card.status-in-progress { border-left-color: #f59e0b; }
-    .appt-card.status-completed   { border-left-color: #22c55e; }
-    .appt-card.status-cancelled   { border-left-color: #ef4444; }
-    .appt-card.status-none        { border-left-color: #1e293b; }
-
-    .appt-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .appt-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 
     .appt-num {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 18px; height: 18px;
-      border-radius: 2px;
-      font-size: 10px;
-      font-weight: 800;
-      background: #1e293b;
-      color: #64748b;
-      margin-right: 7px;
+      width: 20px; height: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--ink-faint);
+      color: var(--ink-primary);
+      margin-right: 8px;
       flex-shrink: 0;
+      font-family: var(--font-stamp);
+      letter-spacing: 0;
     }
 
-    .appt-id { font-size: 10px; font-family: 'SF Mono', ui-monospace, monospace; color: #334155; letter-spacing: 0.06em; }
+    .appt-id {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      color: var(--ink-faint);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
 
-    .appt-tag { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.07em; }
-    .appt-tag.status-scheduled   { background: rgba(14,165,233,0.12); color: #38bdf8; }
-    .appt-tag.status-in-progress { background: rgba(245,158,11,0.12);  color: #fbbf24; }
-    .appt-tag.status-completed   { background: rgba(34,197,94,0.12);   color: #4ade80; }
-    .appt-tag.status-cancelled   { background: rgba(239,68,68,0.12);   color: #f87171; }
-    .appt-tag.status-none        { background: rgba(51,65,85,0.4);     color: #475569; }
+    /* Status square (replaces rounded pill tag) */
+    .appt-status {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-    .appt-subject { font-size: 14px; font-weight: 600; color: #cbd5e1; margin-bottom: 3px; line-height: 1.3; }
-    .appt-meta { font-size: 12px; color: #475569; margin-top: 2px; }
+    .appt-status::before {
+      content: '';
+      display: inline-block;
+      width: 9px; height: 9px;
+      background: currentColor;
+    }
 
-    .loading-msg { text-align: center; padding: 24px; color: #334155; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .appt-status.status-scheduled   { color: var(--rust); }
+    .appt-status.status-in-progress { color: var(--amber); }
+    .appt-status.status-completed   { color: var(--status-go); }
+    .appt-status.status-cancelled   { color: var(--status-stop); }
+    .appt-status.status-none        { color: var(--ink-faint); }
 
-    /* ── Page indicator ─────────────────────────────────────── */
+    .appt-subject {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      margin-bottom: 4px;
+      line-height: 1.3;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
+    }
+    .appt-meta {
+      font-size: 11px;
+      color: var(--ink-muted);
+      margin-top: 3px;
+      letter-spacing: 0.04em;
+    }
+
+    .loading-msg {
+      text-align: center;
+      padding: 24px;
+      color: var(--ink-faint);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-family: var(--font-stamp);
+    }
+
+    /* ── Page indicator — labeled segments ───────────────── */
     .page-indicator {
       position: absolute;
       left: 0; right: 0;
-      bottom: 92px;
+      bottom: 96px;
       z-index: 22;
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 0;
       pointer-events: none;
     }
 
-    .dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #334155;
+    .page-segment {
       pointer-events: all;
       cursor: pointer;
-      transition: width 0.18s, height 0.18s, background 0.18s;
+      font-family: var(--font-stamp);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      padding: 6px 10px;
+      background: transparent;
+      border: none;
+      transition: color 0.18s;
+    }
+    .page-segment.active {
+      color: var(--rust);
+      font-weight: 700;
+    }
+    .page-segment:focus { outline: none; }
+
+    .page-divider {
+      color: var(--ink-faint);
+      align-self: center;
+      pointer-events: none;
+      font-size: 11px;
+      font-family: var(--font-stamp);
     }
 
-    .dot.active {
-      width: 8px; height: 8px;
-      background: #0ea5e9;
-    }
-
-    /* ── Persistent voice FAB ──────────────────────────────── */
-    @keyframes pulse-cyan {
-      0%,100% { box-shadow: 0 4px 12px rgba(14,165,233,0.45); }
-      50%      { box-shadow: 0 4px 22px rgba(14,165,233,0.75), 0 0 36px rgba(14,165,233,0.25); }
+    /* ── FAB ─────────────────────────────────────────────── */
+    @keyframes led-pulse {
+      0%, 100% { transform: translateX(-50%) scale(1);    opacity: 1;    }
+      50%      { transform: translateX(-50%) scale(0.96); opacity: 0.86; }
     }
 
     .fab-mic {
       position: absolute;
       left: 50%;
-      bottom: 24px;
+      bottom: 22px;
       transform: translateX(-50%);
       width: 56px; height: 56px;
       border-radius: 50%;
-      background: #0ea5e9;
-      border: none;
-      color: #fff;
+      background: var(--rust);
+      border: 3px solid var(--ink-primary);
+      color: var(--ink-primary);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 25;
-      animation: pulse-cyan 2.6s ease-in-out infinite;
-      transition: transform 0.12s;
+      animation: led-pulse 3s ease-in-out infinite;
+    }
+    .fab-mic:active {
+      animation: none;
+      background: var(--surface-base);
+      color: var(--rust);
     }
 
-    .fab-mic:active { transform: translateX(-50%) scale(0.94); }
-
-    /* ── Chat overlay ──────────────────────────────────────── */
+    /* ── Chat overlay ────────────────────────────────────── */
     .chat-overlay {
       position: absolute;
       inset: 0;
@@ -515,25 +815,25 @@
       border-radius: 44px;
       overflow: hidden;
     }
-
     .chat-overlay.open { display: flex; }
 
     .chat-overlay-backdrop {
       position: absolute;
       inset: 0;
-      background: rgba(6, 9, 16, 0.86);
-      backdrop-filter: blur(6px);
+      background: rgba(8, 6, 4, 0.92);
       cursor: pointer;
     }
 
     .chat-overlay-panel {
       position: relative;
       z-index: 1;
-      padding: 14px 14px 22px;
-      max-height: 80%;
+      padding: 14px 14px 26px;
+      max-height: 86%;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+      background: var(--surface-base);
+      border-top: 2px solid var(--ink-faint);
     }
 
     .chat-thread {
@@ -548,69 +848,82 @@
     }
     .chat-thread::-webkit-scrollbar { width: 3px; }
     .chat-thread::-webkit-scrollbar-track { background: transparent; }
-    .chat-thread::-webkit-scrollbar-thumb { background: #1e2a3a; border-radius: 2px; }
+    .chat-thread::-webkit-scrollbar-thumb { background: var(--ink-faint); }
     .chat-thread:empty { display: none; }
 
+    /* Rep — paper / dot-matrix print */
     .bubble-rep {
       align-self: flex-end;
-      background: #0d1526;
-      border: 1px solid #1e293b;
-      border-radius: 14px 14px 3px 14px;
+      background: var(--surface-paper);
+      border: 2px solid var(--ink-faint);
+      border-radius: 0;
       padding: 10px 13px;
       font-size: 13px;
-      color: #e2e8f0;
+      color: var(--ink-dark);
       max-width: 85%;
       line-height: 1.5;
+      font-family: var(--font-mono);
     }
 
+    /* Agent — phosphor terminal */
     .bubble-agent {
       align-self: flex-start;
-      background: transparent;
-      padding: 2px 0;
+      background: var(--surface-base);
+      border: 2px solid var(--terminal-green);
+      padding: 10px 13px;
       font-size: 13px;
-      color: #cbd5e1;
+      color: var(--terminal-green);
       max-width: 90%;
       line-height: 1.55;
-      display: flex;
-      gap: 8px;
-      align-items: flex-start;
+      font-family: var(--font-mono);
+      text-shadow: 0 0 3px rgba(51, 255, 51, 0.4);
     }
 
-    .bubble-agent-icon {
-      color: #0ea5e9;
-      font-size: 11px;
-      margin-top: 2px;
-      flex-shrink: 0;
+    .bubble-agent-prefix {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--terminal-green);
+      opacity: 0.85;
+      margin-bottom: 4px;
+      display: block;
+      font-family: var(--font-stamp);
     }
 
-    .scheduling-indicator {
+    .standby {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-top: 6px;
-      padding-left: 19px;
     }
 
-    @keyframes pulse-dot {
-      0%,100% { opacity: 0.3; }
-      50%      { opacity: 1; }
+    .crt-cursor {
+      display: inline-block;
+      width: 10px; height: 14px;
+      background: var(--terminal-green);
+      box-shadow: 0 0 6px var(--terminal-green);
+      animation: crt-blink 1s steps(2) infinite;
+      flex-shrink: 0;
     }
 
-    .sched-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #0ea5e9;
-      animation: pulse-dot 1.2s ease-in-out infinite;
-    }
-
-    .sched-dot:nth-child(2) { animation-delay: 0.2s; }
-    .sched-dot:nth-child(3) { animation-delay: 0.4s; }
-
-    .sched-label {
+    .standby-label {
       font-size: 11px;
-      color: #475569;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
+      color: var(--terminal-green);
+      font-weight: 700;
+      text-shadow: 0 0 3px rgba(51, 255, 51, 0.4);
+      font-family: var(--font-stamp);
+    }
+
+    .scheduling-indicator {
+      align-self: flex-start;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--surface-base);
+      border: 2px solid var(--terminal-green);
     }
 
     .prompt-chips {
@@ -620,24 +933,25 @@
       padding-bottom: 2px;
       flex-shrink: 0;
     }
-
     .prompt-chips::-webkit-scrollbar { display: none; }
 
     .chip {
       flex-shrink: 0;
-      background: #1e293b;
-      color: #94a3b8;
-      border: none;
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 12px;
+      background: var(--surface-elevated);
+      color: var(--ink-primary);
+      border: 2px solid var(--ink-faint);
+      border-radius: 0;
+      padding: 7px 12px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
       cursor: pointer;
-      font-family: inherit;
-      transition: background 0.12s;
+      font-family: var(--font-stamp);
+      text-transform: uppercase;
+      transition: border-color 0.12s, background 0.12s, color 0.12s;
     }
-
-    .chip:hover  { background: #334155; }
-    .chip:active { background: #334155; opacity: 0.8; }
+    .chip:hover  { border-color: var(--rust); }
+    .chip:active { background: var(--rust); color: var(--surface-base); }
 
     .chat-input-row {
       display: flex;
@@ -648,36 +962,48 @@
 
     .chat-input {
       flex: 1;
-      background: #0d1526;
-      border: 1px solid #1e293b;
-      border-radius: 8px;
+      background: var(--surface-elevated);
+      border: 2px solid var(--ink-faint);
+      border-radius: 0;
       padding: 12px;
-      color: #e2e8f0;
-      font-size: 14px;
+      color: var(--ink-primary);
+      font-size: 13px;
       resize: none;
       height: 48px;
-      font-family: inherit;
+      font-family: var(--font-mono);
       transition: border-color 0.12s;
       overflow: hidden;
     }
 
-    .chat-input::placeholder { color: #334155; }
-    .chat-input:focus { outline: none; border-color: #0ea5e9; }
+    .chat-input::placeholder {
+      color: var(--ink-faint);
+      letter-spacing: 0.06em;
+      font-family: var(--font-stamp);
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    .chat-input:focus { outline: none; border-color: var(--rust); }
 
     .send-btn {
       width: 48px; height: 48px;
-      background: #0ea5e9;
-      border: none;
-      border-radius: 8px;
-      color: #fff;
+      background: var(--rust);
+      border: 2px solid var(--rust);
+      border-radius: 0;
+      color: var(--ink-primary);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
-
-    .send-btn:active { opacity: 0.7; }
+    .send-btn:active {
+      background: var(--surface-base);
+      color: var(--rust);
+    }
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -689,16 +1015,16 @@
       <div class="header-overlay">
         <div class="status-bar">
           <span class="status-time" id="clock">9:41</span>
-          <span class="status-icons">&#9679;&#9679;&#9679; &#9679; 100%</span>
+          <span class="status-icons">&#9632;&#9632;&#9632; &#9632; 100%</span>
         </div>
         <div class="brand-row">
           <div class="brand-mark">
             <span class="brand-name">Field Agent</span>
-            <span class="brand-sub">Built with Claude Code &bull; v0.1</span>
+            <span class="brand-sub">FIELD AGENT // VERSION 0.1.0 // CLAUDE CODE BUILD</span>
           </div>
           <div class="sf-status">
             <span class="sf-dot" id="sf-dot"></span>
-            <span id="sf-label">Salesforce</span>
+            <span id="sf-label">SF &middot; STANDBY</span>
           </div>
         </div>
       </div>
@@ -710,9 +1036,16 @@
         <div class="pane" id="pane-itinerary">
           <div id="map"></div>
 
+          <div class="terminal-readout" id="terminal-readout">
+            <span class="terminal-dot"></span>
+            <span class="terminal-label">NEXT STOP</span>
+            <span class="terminal-value" id="terminal-stop">&mdash;</span>
+            <span class="terminal-suffix" id="terminal-eta">&mdash;</span>
+          </div>
+
           <div class="route-empty" id="route-empty">
-            <div class="route-empty-title">No plan yet</div>
-            <div class="route-empty-sub">Ask the agent to plan your day</div>
+            <div class="route-empty-title">No Route Generated</div>
+            <div class="route-empty-sub">Awaiting Instruction</div>
           </div>
 
           <div class="sheet" id="sheet" style="display:none;">
@@ -720,31 +1053,31 @@
             <div class="sheet-inner">
               <div class="sheet-handle-row">
                 <div class="drag-handle"></div>
-                <span class="sheet-today-label">Today</span>
+                <span class="sheet-today-label">&mdash; TODAY &mdash;</span>
               </div>
 
               <div class="kpi-row">
                 <div class="kpi-card">
                   <div class="kpi-label">Stops</div>
-                  <div class="kpi-value" id="kpi-stops"><em>—</em></div>
+                  <div class="kpi-value" id="kpi-stops"><em>&mdash;</em></div>
                   <div class="progress-bar-track">
                     <div class="progress-bar-fill" id="kpi-progress" style="width:0%"></div>
                   </div>
                 </div>
                 <div class="kpi-card">
                   <div class="kpi-label">Next</div>
-                  <div class="kpi-value" id="kpi-next"><em>—</em></div>
+                  <div class="kpi-value" id="kpi-next"><em>&mdash;</em></div>
                 </div>
                 <div class="kpi-card">
                   <div class="kpi-label">Status</div>
                   <div class="kpi-value" id="kpi-time">
-                    <span class="time-dot"></span><em>On track</em>
+                    <span class="time-block"></span><em>On Track</em>
                   </div>
                 </div>
               </div>
 
               <div class="appt-list" id="appt-list">
-                <div class="loading-msg">Loading&hellip;</div>
+                <div class="loading-msg">Processing. Stand By.</div>
               </div>
             </div>
           </div>
@@ -758,15 +1091,15 @@
             </div>
 
             <div class="context-card">
-              <div class="card-label">A peek at your day</div>
-              <div class="brief-text loading" id="brief-text">Generating your brief&hellip;</div>
+              <div class="card-label">&mdash; Today's Brief &mdash;</div>
+              <div class="brief-text loading" id="brief-text">Processing. Stand By.</div>
               <div class="brief-meta" id="brief-meta"></div>
             </div>
 
             <div class="context-card">
-              <div class="card-label">Open opps — needs follow-up</div>
+              <div class="card-label">&mdash; Open Opps &middot; Needs Follow-Up &mdash;</div>
               <div id="opps-content">
-                <div class="opp-placeholder">Loading opportunities&hellip;</div>
+                <div class="opp-placeholder">Processing. Stand By.</div>
               </div>
             </div>
           </div>
@@ -775,13 +1108,13 @@
         <!-- RIGHT PANE: ADMIN -->
         <div class="pane" id="pane-admin">
           <div class="cards-scroll">
-            <div class="pane-heading">Today's todos</div>
+            <div class="section-dash">&mdash; Today's Todos &mdash;</div>
 
             <div class="context-card" id="card-attention">
-              <div class="card-label">Needs your attention</div>
+              <div class="card-label">&mdash; Needs Attention &mdash;</div>
 
               <div class="slack-msg" id="slack-msg-0">
-                <div class="slack-avatar" style="background:#1e3a5f;color:#7dd3fc;">MR</div>
+                <div class="slack-avatar">MR</div>
                 <div class="slack-body">
                   <div class="slack-source">From Slack</div>
                   <div class="slack-header">
@@ -798,7 +1131,7 @@
               </div>
 
               <div class="slack-msg" id="slack-msg-1">
-                <div class="slack-avatar" style="background:#1a3a1e;color:#86efac;">DT</div>
+                <div class="slack-avatar">DT</div>
                 <div class="slack-body">
                   <div class="slack-source">From Slack</div>
                   <div class="slack-header">
@@ -816,10 +1149,10 @@
             </div>
 
             <div class="context-card">
-              <div class="card-label">Follow-ups</div>
+              <div class="card-label">&mdash; Follow-Ups &mdash;</div>
               <div class="followup-item">
                 <div class="followup-title">Review redlines on vendor MSA</div>
-                <div class="followup-meta">Due tomorrow</div>
+                <div class="followup-meta">Due Tomorrow</div>
               </div>
             </div>
           </div>
@@ -827,17 +1160,19 @@
 
       </div><!-- .panes -->
 
-      <!-- Page indicator (3 dots) -->
+      <!-- Page indicator (labeled segments) -->
       <div class="page-indicator">
-        <span class="dot" data-pane="0"></span>
-        <span class="dot active" data-pane="1"></span>
-        <span class="dot" data-pane="2"></span>
+        <button class="page-segment" data-pane="0">Itinerary</button>
+        <span class="page-divider">&#9474;</span>
+        <button class="page-segment active" data-pane="1">Home</button>
+        <span class="page-divider">&#9474;</span>
+        <button class="page-segment" data-pane="2">Admin</button>
       </div>
 
       <!-- Persistent voice FAB -->
       <button class="fab-mic" id="fab-mic" aria-label="Voice agent">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+             stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="2" width="6" height="12" rx="3"/>
           <path d="M19 11v1a7 7 0 0 1-14 0v-1"/>
           <line x1="12" y1="19" x2="12" y2="22"/>
@@ -852,7 +1187,7 @@
           <div class="chat-thread" id="chat-thread"></div>
           <div class="prompt-chips" id="prompt-chips"></div>
           <div class="chat-input-row">
-            <textarea class="chat-input" id="chat-input" placeholder="What are we doing today, Johnny?"></textarea>
+            <textarea class="chat-input" id="chat-input" placeholder="Query the agent."></textarea>
             <button class="send-btn" id="send-btn">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -898,10 +1233,10 @@
         const d = await fetch('/api/health').then(r => r.json());
         const ok = d.ok && d.sfAlias;
         dot.className     = 'sf-dot ' + (ok ? 'connected' : 'disconnected');
-        label.textContent = ok ? 'SF: connected' : 'SF: error';
+        label.textContent = ok ? 'SF · ONLINE' : 'SF · ERROR';
       } catch {
         dot.className     = 'sf-dot disconnected';
-        label.textContent = 'SF: offline';
+        label.textContent = 'SF · OFFLINE';
       }
     }
 
@@ -918,10 +1253,10 @@
           const h = d.getHours() % 12 || 12;
           const m = String(d.getMinutes()).padStart(2, '0');
           const ampm = d.getHours() >= 12 ? 'PM' : 'AM';
-          metaEl.textContent = `Generated today · ${h}:${m} ${ampm}`;
+          metaEl.textContent = `Generated Today · ${h}:${m} ${ampm}`;
         }
       } catch {
-        textEl.textContent = 'Could not load brief — check backend.';
+        textEl.textContent = 'BRIEF UNAVAILABLE. RETRY LATER.';
         textEl.classList.remove('loading');
       }
     }
@@ -932,16 +1267,16 @@
       try {
         const data = await fetch('/api/open-opps').then(r => r.json());
         if (!data.ok || !data.opps || !data.opps.length) {
-          el.innerHTML = '<div class="opp-placeholder">No open opportunities found</div>';
+          el.innerHTML = '<div class="opp-placeholder">No Opps Queued.</div>';
           return;
         }
         el.innerHTML = data.opps.map(o => {
           const amt = o.amount != null
-            ? '$' + Math.round(o.amount / 1000) + 'k'
+            ? '$' + Math.round(o.amount / 1000) + 'K'
             : '—';
           const stale = o.daysSince != null
-            ? (o.daysSince === 0 ? 'active today' : `${o.daysSince}d since last activity`)
-            : 'no activity logged';
+            ? (o.daysSince === 0 ? 'Active Today' : `${o.daysSince}D Stale`)
+            : 'No Activity';
           return `
             <div class="opp-item">
               <div style="min-width:0">
@@ -955,7 +1290,7 @@
             </div>`;
         }).join('');
       } catch {
-        el.innerHTML = '<div class="opp-placeholder">Could not load opportunities</div>';
+        el.innerHTML = '<div class="opp-placeholder">Opps Unavailable. Retry Later.</div>';
       }
     }
 
@@ -990,26 +1325,26 @@
     // ── Pane carousel ─────────────────────────────────────────
     const PANE_CONFIG = {
       0: {
-        placeholder: "Tell me about your visit…",
+        placeholder: "Report on this visit.",
         chips: ["Log this visit", "Skip this stop", "What's next?"],
       },
       1: {
-        placeholder: "What are we doing today, Johnny?",
+        placeholder: "Query the agent.",
         chips: ["Plan my day", "Log my last visit", "Catch me up on Acme Industries"],
       },
       2: {
-        placeholder: "Reply or follow up…",
+        placeholder: "Draft reply or follow-up.",
         chips: ["Reply to Maya", "Follow up tomorrow"],
       },
     };
 
     let currentPane = 1;
     const panesEl = document.getElementById('panes');
-    const dots = document.querySelectorAll('.dot');
+    const segments = document.querySelectorAll('.page-segment');
 
     function setActivePane(idx) {
       currentPane = idx;
-      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      segments.forEach((s, i) => s.classList.toggle('active', i === idx));
     }
 
     function goToPane(idx, smooth = true) {
@@ -1028,9 +1363,9 @@
       }, 60);
     });
 
-    dots.forEach(d => {
-      d.addEventListener('click', () => {
-        const idx = parseInt(d.dataset.pane, 10);
+    segments.forEach(s => {
+      s.addEventListener('click', () => {
+        const idx = parseInt(s.dataset.pane, 10);
         goToPane(idx, true);
       });
     });
@@ -1095,7 +1430,7 @@
       const thread = document.getElementById('chat-thread');
       const el = document.createElement('div');
       el.className = 'bubble-agent';
-      el.innerHTML = `<span class="bubble-agent-icon">&#9670;</span><span>${esc(text)}</span>`;
+      el.innerHTML = `<span class="bubble-agent-prefix">&#9654; AGENT</span><div>${esc(text)}</div>`;
       thread.appendChild(el);
       thread.scrollTop = thread.scrollHeight;
       return el;
@@ -1106,12 +1441,10 @@
       const el = document.createElement('div');
       el.className = 'bubble-agent';
       el.innerHTML = `
-        <span class="bubble-agent-icon">&#9670;</span>
-        <span class="scheduling-indicator" style="padding-left:0;margin-top:0;">
-          <span class="sched-dot"></span>
-          <span class="sched-dot"></span>
-          <span class="sched-dot"></span>
-          <span class="sched-label">Thinking&hellip;</span>
+        <span class="bubble-agent-prefix">&#9654; AGENT</span>
+        <span class="standby">
+          <span class="crt-cursor"></span>
+          <span class="standby-label">Processing. Stand By.</span>
         </span>
       `;
       thread.appendChild(el);
@@ -1125,7 +1458,7 @@
         return;
       }
       thinkingBubbleEl.innerHTML =
-        `<span class="bubble-agent-icon">&#9670;</span><span>${esc(text)}</span>`;
+        `<span class="bubble-agent-prefix">&#9654; AGENT</span><div>${esc(text)}</div>`;
       thinkingBubbleEl = null;
       const thread = document.getElementById('chat-thread');
       thread.scrollTop = thread.scrollHeight;
@@ -1137,10 +1470,8 @@
       el.className = 'scheduling-indicator';
       el.id = 'sched-indicator';
       el.innerHTML = `
-        <div class="sched-dot"></div>
-        <div class="sched-dot"></div>
-        <div class="sched-dot"></div>
-        <span class="sched-label">Sequencing stops&hellip;</span>
+        <span class="crt-cursor"></span>
+        <span class="standby-label">Sequencing Stops.</span>
       `;
       thread.appendChild(el);
       schedulingIndicatorEl = el;
@@ -1180,7 +1511,7 @@
         }).then(r => r.json());
 
         if (!res.ok) {
-          replaceThinkingBubble('Something went wrong. Please try again.');
+          replaceThinkingBubble('TRANSMISSION ERROR. RETRY.');
           setBusy(false);
           return;
         }
@@ -1208,7 +1539,7 @@
           setBusy(false);
         }
       } catch (err) {
-        replaceThinkingBubble('Network error — check that the server is running.');
+        replaceThinkingBubble('NETWORK FAULT. SERVER OFFLINE.');
         setBusy(false);
       }
     }
@@ -1276,7 +1607,7 @@
         });
 
         map.on('load', () => {
-          new mapboxgl.Marker({ color: '#0ea5e9' })
+          new mapboxgl.Marker({ color: '#c8704a' })
             .setLngLat(REP_COORD)
             .setPopup(new mapboxgl.Popup({ offset: 12 }).setText('You'))
             .addTo(map);
@@ -1288,6 +1619,30 @@
           }
         });
       });
+    }
+
+    function updateTerminalReadout(appts) {
+      const readout = document.getElementById('terminal-readout');
+      const stopEl  = document.getElementById('terminal-stop');
+      const etaEl   = document.getElementById('terminal-eta');
+
+      if (!appts.length) {
+        readout.classList.remove('active');
+        return;
+      }
+
+      const next = appts.find(a => a.Status === 'Scheduled') || appts[0];
+      const name = (next.Account && next.Account.Name) || next.Subject || '—';
+      stopEl.textContent = name.toUpperCase();
+
+      if (next.SchedStartTime) {
+        const mins = Math.max(0, Math.round((new Date(next.SchedStartTime) - Date.now()) / 60000));
+        etaEl.textContent = mins > 0 ? `${mins} MIN` : 'NOW';
+      } else {
+        etaEl.textContent = '—';
+      }
+
+      readout.classList.add('active');
     }
 
     function populateItinerary(appts) {
@@ -1318,7 +1673,7 @@
         const label = (appt.Account && appt.Account.Name) || appt.Subject || `Stop ${i + 1}`;
         const tooltip = (lat == null || lng == null) ? '...' : label;
 
-        const m = new mapboxgl.Marker({ color: '#6366f1' })
+        const m = new mapboxgl.Marker({ color: '#7fb89b' })
           .setLngLat(coord)
           .setPopup(new mapboxgl.Popup({ offset: 12 }).setText(tooltip))
           .addTo(map);
@@ -1328,6 +1683,7 @@
 
       map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
       renderAppointmentList(appts);
+      updateTerminalReadout(appts);
     }
 
     function renderAppointmentList(appointments) {
@@ -1335,10 +1691,10 @@
       const apptList = document.getElementById('appt-list');
       const count = appointments.length;
 
-      kpiStops.innerHTML = `<em>${count}</em> stop${count !== 1 ? 's' : ''}`;
+      kpiStops.innerHTML = `<em>${count}</em> Stop${count !== 1 ? 's' : ''}`;
 
       if (!count) {
-        apptList.innerHTML = '<div class="loading-msg">No stops scheduled</div>';
+        apptList.innerHTML = '<div class="loading-msg">No Stops Scheduled.</div>';
         return;
       }
 
@@ -1355,6 +1711,7 @@
         const timeStr = a.SchedStartTime
           ? new Date(a.SchedStartTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
           : '—';
+        const statusLabel = esc((a.Status || 'New').toUpperCase());
         return `
           <div class="appt-card status-${statusKey || 'none'}">
             <div class="appt-top-row">
@@ -1362,7 +1719,7 @@
                 <span class="appt-num">${i + 1}</span>
                 <span class="appt-id">${esc(a.AppointmentNumber || '')}</span>
               </div>
-              <span class="appt-tag status-${statusKey || 'none'}">${esc(a.Status || 'New')}</span>
+              <span class="appt-status status-${statusKey || 'none'}">${statusLabel}</span>
             </div>
             <div class="appt-subject">${accountName}</div>
             <div class="appt-meta">${addr}</div>
@@ -1374,7 +1731,6 @@
     // ── Init ──────────────────────────────────────────────────
     async function init() {
       // Lock initial scroll position to Home (center pane).
-      // Single rAF yield so layout settles; instant set, no smooth animation.
       requestAnimationFrame(() => {
         panesEl.scrollLeft = panesEl.clientWidth;
         setActivePane(1);
