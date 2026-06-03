@@ -119,20 +119,31 @@ app.post('/api/daily-brief', async (req, res) => {
   }
 
   const mockContext = `
-Rep: Johnny Kirkwood, field sales
-Open opportunities:
-  - Isis Toyota - lift replacement ($48,000, close Sept 30, 12 days no activity)
-  - Acme Industries - fleet expansion ($220,000, close Dec 31, 31 days no activity)
-  - Northwind Logistics - software renewal ($34,000, close Jul 15, 5 days no activity)
-Weather: partly cloudy, 72°F, good driving day
-Today: Thursday
+Rep: Johnny Kirkwood, field sales, Bay Area territory BAY-04.
+Open accounts:
+  - Northwind Software — $80K, closes Jul 15, 5 days quiet
+  - Isis Toyota — $48K, closes Sept 30, 12 days quiet
+  - Universal Containers — $62K, open renewal, 18 days quiet
+  - Brack Industries — procurement follow-up, Bob in Accounting, Giants outing signal
+  - Watt Terra — $5K, initial project partnership, no activity
+Constraint: 4:30 PM kid pickup at San Mateo High School. Final visit 16:10, 9-min buffer.
+Today: Tuesday
   `.trim();
 
   try {
     const msg = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 200,
-      system: "You're a calm, helpful assistant briefing a field sales rep on their morning. Keep it under 450 characters, conversational, no bullet points, no fluff.",
+      max_tokens: 240,
+      system: `You produce terminal-style daily briefs for a 1980s workstation UI.
+
+Output format — NOTHING else:
+- Exactly 6 to 7 lines.
+- Each line ≤ 60 characters, lowercase, fragment (no full sentences).
+- No bullets, no dashes, no quotes, no emoji, no leading "> ".
+- Lines 1–5 should describe the field state (priority accounts, time pressure, route fit, constraints).
+- Final line MUST start with "recommendation: " followed by an imperative phrase.
+
+Style: clipped, scanning, machine-cadence. Think system log, not assistant copy. No greetings, no warmth, no "you've got this".`,
       messages: [{ role: 'user', content: mockContext }],
     });
 

@@ -6,230 +6,190 @@
   <title>Field Agent</title>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
   <style>
+    /* ============================================================
+       M8.1 — Pixel-perfect to references
+       ============================================================ */
     :root {
-      /* Surfaces — pure dark, computer-room-at-night */
-      --surface-base:     #050608;
-      --surface-raised:   #0a0c10;
-      --surface-elevated: #0f1218;
+      --screen-bg:           #0b0f0a;
+      --screen-bg-2:         #11160f;
+      --screen-border:       #394236;
+      --phosphor-green:      #7CFF8A;
+      --phosphor-green-soft: #A7F5B2;
+      --terminal-green:      #5BE36E;
+      --text-main:           #D8F3D3;
+      --text-dim:            #8DB18B;
+      --text-muted:          #6E836E;
+      --beige-shell:         #D8C8A7;
+      --beige-dark:          #B8A47E;
+      --beige-shadow:        #8A7A5D;
+      --ui-gray:             #8A9385;
+      --ui-dark:             #31372F;
+      --ui-light:            #E8E1D1;
+      --select-cyan:         #8BE8FF;
+      --alert-red:           #FF7A6B;
 
-      /* Text */
-      --ink-primary:   #d8e4dc;   /* cool off-white, slight green tint */
-      --ink-muted:     #6b7a72;
-      --ink-faint:     #3a443e;
+      --disclosure-blue:     #5BA8E5;
+      --disclosure-deep:     #1E3A5F;
+      --signal-magenta:      #E85AC5;
+      --signal-yellow:       #F2C744;
+      --crt-bg-tint:         #050805;
 
-      /* Accents */
-      --crt-green:     #33ff66;   /* primary action — phosphor */
-      --crt-glow:      rgba(51, 255, 102, 0.5);
-      --amber:         #d4a845;   /* warnings / timestamps only */
-      --y2k-cyan:      #00d4ff;
-      --chrome:        #b8c0cc;
-      --synthwave:     #ff2d92;   /* hot magenta — warnings / absences */
-      --terminal-green:#33ff33;
-
-      /* Status */
-      --status-go:     #33ff66;
-      --status-warn:   #d4a845;
-      --status-stop:   #ff2d92;
-      --status-idle:   #3a443e;
-
-      /* Type */
-      --font-mono:  'IBM Plex Mono', 'JetBrains Mono', 'Cascadia Code', ui-monospace, 'SF Mono', Menlo, monospace;
-      --font-stamp: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
+      --font-mono: 'IBM Plex Mono', 'Space Mono', 'Courier Prime', ui-monospace, Menlo, monospace;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #08060c;
-      color: var(--ink-primary);
+      background: #DDD4C6;
+      color: var(--text-main);
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
       font-family: var(--font-mono);
       font-feature-settings: "tnum" 1;
-    }
-
-    /* Film grain — fixed overlay */
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 9999;
-      mix-blend-mode: overlay;
-      opacity: 0.02;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.92 0 0 0 0 0.86 0 0 0 0 0.7 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+      -webkit-font-smoothing: antialiased;
     }
 
     /* ── Phone chassis ─────────────────────────────────────── */
     .phone {
-      width: 393px;
-      height: 852px;
-      background: #000;
-      border-radius: 55px;
-      padding: 12px;
-      box-shadow: 0 40px 80px rgba(0,0,0,0.85), inset 0 0 0 1px #0a0c10;
+      width: 390px;
+      height: 844px;
+      background: #0a0a08;
+      border-radius: 54px;
+      padding: 11px;
+      box-shadow:
+        0 30px 60px rgba(0, 0, 0, 0.30),
+        inset 0 0 0 1px #000,
+        inset 0 0 0 3px #1c1c18;
       display: flex;
       flex-direction: column;
       position: relative;
     }
 
     .island {
-      width: 120px;
-      height: 34px;
+      width: 116px;
+      height: 32px;
       background: #000;
-      border-radius: 20px;
-      margin: 0 auto 8px;
+      border-radius: 18px;
+      margin: 0 auto 6px;
       flex-shrink: 0;
-      border: 2px solid #0a0c10;
       position: relative;
       z-index: 30;
     }
 
+    /* CRT screen — vignette, scanlines, dot-grain */
     .screen {
       flex: 1;
-      background: var(--surface-base);
+      background: var(--crt-bg-tint);
       border-radius: 44px;
       overflow: hidden;
       position: relative;
-      display: block;
+      display: flex;
+      flex-direction: column;
+      box-shadow:
+        inset 0 0 6px rgba(0, 0, 0, 0.85),
+        inset 0 0 70px rgba(0, 0, 0, 0.55),
+        inset 0 0 180px rgba(0, 0, 0, 0.40);
     }
 
-    /* CRT scanline overlay across the entire screen */
-    .screen::after {
-      content: '';
+    .screen::before {
+      content: "";
       position: absolute;
       inset: 0;
       pointer-events: none;
-      z-index: 8;
+      z-index: 99;
       border-radius: 44px;
-      background: linear-gradient(
-        rgba(0,0,0,0)    50%,
-        rgba(0,0,0,0.08) 50%
-      );
-      background-size: 100% 3px;
-      mix-blend-mode: multiply;
-      opacity: 0.6;
+      background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3'%3E%3Crect x='0' y='0' width='1' height='1' fill='%23ffffff' fill-opacity='0.10'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%237cff8a' fill-opacity='0.06'/%3E%3C/svg%3E");
+      background-size: 3px 3px;
+      opacity: 0.55;
+      mix-blend-mode: screen;
     }
-
-    /* ── Header overlay ──────────────────────────────────── */
-    .header-overlay {
+    .screen::after {
+      content: "";
       position: absolute;
-      top: 0; left: 0; right: 0;
-      z-index: 10;
-      padding: 14px 20px 10px;
-      background: var(--surface-base);
-      border-radius: 44px 44px 0 0;
-      border-bottom: 2px solid var(--ink-faint);
+      inset: 0;
       pointer-events: none;
+      z-index: 100;
+      border-radius: 44px;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.32) 0px,
+        rgba(0, 0, 0, 0.32) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      opacity: 0.55;
     }
 
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      margin-bottom: 8px;
-      color: var(--ink-muted);
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-
-    .status-time { font-variant-numeric: tabular-nums; color: var(--ink-primary); }
-    .status-icons { font-size: 10px; color: var(--ink-faint); display: flex; gap: 6px; }
-
-    .brand-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .brand-mark { display: flex; flex-direction: column; gap: 3px; }
-
-    .brand-name {
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--ink-primary);
-      font-family: var(--font-stamp);
-    }
-
-    .brand-sub {
-      font-size: 8px;
+    /* Micro header — 2 lines, phosphor green, blue divider */
+    .micro-header {
+      flex-shrink: 0;
+      padding: 12px 12px 8px;
       font-family: var(--font-mono);
-      letter-spacing: 0.14em;
-      color: var(--crt-green);
-      text-shadow: 0 0 4px var(--crt-glow);
+      font-size: 10px;
+      letter-spacing: 0.03em;
+      color: var(--phosphor-green);
       text-transform: uppercase;
-    }
-
-    .brand-monitored {
-      font-size: 7px;
-      font-family: var(--font-mono);
-      letter-spacing: 0.22em;
-      color: var(--ink-faint);
-      text-transform: uppercase;
-      margin-top: 1px;
-    }
-
-    /* Chrome accent rule under the brand mark */
-    .brand-rule {
-      height: 1px;
-      width: 64px;
-      background: var(--chrome);
-      margin-top: 4px;
-      opacity: 0.6;
-    }
-
-    /* Surveillance status line — top of header */
-    .surveillance-bar {
-      font-size: 9px;
-      font-family: var(--font-stamp);
-      letter-spacing: 0.18em;
-      color: var(--ink-faint);
-      text-transform: uppercase;
-      margin-bottom: 6px;
+      background: var(--crt-bg-tint);
+      z-index: 10;
+      position: relative;
+      line-height: 1.55;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      text-shadow:
+        0 0 1px var(--phosphor-green),
+        0 0 4px rgba(124, 255, 138, 0.4);
     }
-
-    .sf-status {
+    .micro-header::after {
+      content: "";
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: var(--disclosure-blue);
+      opacity: 0.55;
+    }
+    .mh-row {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .mh-row .left {
+      display: flex;
+      gap: 12px;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+    .mh-row .right {
+      display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 9px;
-      font-weight: 700;
-      color: var(--ink-muted);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      pointer-events: all;
-      font-family: var(--font-stamp);
+      font-variant-numeric: tabular-nums;
     }
-
-    .sf-dot {
-      width: 8px; height: 8px;
-      background: var(--ink-faint);
-      flex-shrink: 0;
+    .mh-led {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--phosphor-green);
+      box-shadow: 0 0 4px var(--phosphor-green);
+      vertical-align: -1px;
+      margin-left: 4px;
     }
+    .mh-led.disconnected { background: var(--alert-red); box-shadow: 0 0 4px var(--alert-red); }
 
-    @keyframes crt-blink {
-      0%, 49%   { opacity: 1; }
-      50%, 100% { opacity: 0.32; }
+    /* ── Pane carousel ───────────────────────────────────── */
+    .panes-wrap {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
     }
-
-    .sf-dot.connected    { background: var(--status-go);   animation: crt-blink 2s steps(2) infinite; }
-    .sf-dot.disconnected { background: var(--status-stop); }
-
-    /* ── Panes carousel ──────────────────────────────────── */
     .panes {
+      flex: 1;
+      min-height: 0;
       display: flex;
       width: 100%;
-      height: 100%;
       overflow-x: auto;
       overflow-y: hidden;
       scroll-snap-type: x mandatory;
@@ -246,1668 +206,1351 @@
       position: relative;
     }
 
-    .cards-scroll {
+    .pane-scroll {
       position: absolute;
       inset: 0;
       overflow-y: auto;
-      padding: 132px 14px 180px;
+      padding: 12px 12px 14px;
       -webkit-overflow-scrolling: touch;
     }
+    .pane-scroll::-webkit-scrollbar { width: 3px; }
+    .pane-scroll::-webkit-scrollbar-track { background: transparent; }
+    .pane-scroll::-webkit-scrollbar-thumb { background: var(--screen-border); }
 
-    .cards-scroll::-webkit-scrollbar { width: 3px; }
-    .cards-scroll::-webkit-scrollbar-track { background: transparent; }
-    .cards-scroll::-webkit-scrollbar-thumb { background: var(--ink-faint); }
-
-    /* Greeting */
-    .greeting-section { margin-bottom: 18px; }
-
-    .greeting {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--ink-primary);
-      letter-spacing: 0.05em;
-      line-height: 1.2;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-
-    /* Section dash heading (Admin pane top-of-list) */
-    .section-dash {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      margin: 0 2px 14px;
-      font-family: var(--font-stamp);
-    }
-
-    /* Cards — flat surfaces, sharp corners */
-    .context-card {
-      background: var(--surface-elevated);
-      border: 2px solid var(--ink-faint);
-      border-radius: 0;
-      padding: 14px;
+    /* Window component — solid blue title + green-bordered body */
+    .window {
       margin-bottom: 12px;
+      background: var(--screen-bg);
+      border: 1px solid var(--phosphor-green);
+      box-shadow: 0 0 0 1px rgba(124, 255, 138, 0.35) inset;
     }
 
-    .card-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      margin-bottom: 12px;
-      font-family: var(--font-stamp);
-    }
-
-    /* Form-row pattern (used everywhere a label/value pairing appears) */
-    .form-label {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      margin-bottom: 4px;
-      font-family: var(--font-stamp);
-    }
-
-    .form-value {
-      font-size: 13px;
-      color: var(--ink-primary);
-      line-height: 1.5;
-    }
-
-    /* Brief card */
-    .brief-text {
-      font-size: 13px;
-      color: var(--ink-primary);
-      line-height: 1.7;
-    }
-    .brief-text.loading {
-      color: var(--ink-faint);
-      font-family: var(--font-stamp);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      font-size: 11px;
-    }
-    .brief-meta {
-      font-size: 9px;
-      color: var(--ink-faint);
-      margin-top: 12px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-
-    /* Slack messages — form-row aesthetic */
-    .slack-msg {
-      display: flex;
-      gap: 10px;
-      padding: 12px 0;
-      cursor: pointer;
-      transition: opacity 0.3s;
-    }
-    .slack-msg + .slack-msg { border-top: 1px solid var(--ink-faint); }
-    .slack-msg.fading { opacity: 0; }
-
-    .slack-avatar {
-      width: 30px; height: 30px;
+    .window-title {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      flex-shrink: 0;
-      background: var(--surface-base);
-      border: 2px solid var(--ink-faint);
-      color: var(--ink-primary);
-      font-family: var(--font-stamp);
-    }
-
-    .slack-body { flex: 1; min-width: 0; }
-
-    .slack-source {
-      font-size: 8px;
-      font-weight: 700;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--ink-faint);
-      margin-bottom: 3px;
-      font-family: var(--font-stamp);
-    }
-
-    .slack-header {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-
-    .slack-sender {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--ink-primary);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-
-    .slack-channel {
-      font-size: 10px;
-      color: var(--ink-muted);
-      letter-spacing: 0.04em;
-    }
-
-    .slack-time {
-      font-size: 9px;
-      color: var(--ink-faint);
-      margin-left: auto;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-
-    .slack-text {
-      font-size: 13px;
-      color: var(--ink-primary);
-      line-height: 1.5;
-    }
-
-    .slack-reply-area { margin-top: 10px; display: none; }
-    .slack-reply-area.open { display: block; }
-
-    .reply-input {
-      width: 100%;
-      background: var(--surface-base);
-      border: 2px solid var(--ink-faint);
-      border-radius: 0;
-      padding: 8px 10px;
-      color: var(--ink-primary);
-      font-size: 12px;
-      resize: none;
-      height: 60px;
-      font-family: var(--font-mono);
-    }
-    .reply-input:focus { outline: none; border-color: var(--crt-green); }
-
-    .reply-send {
-      margin-top: 8px;
-      padding: 8px 14px;
-      background: var(--crt-green);
-      color: var(--ink-primary);
-      border: 2px solid var(--crt-green);
-      border-radius: 0;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      cursor: pointer;
-      font-family: var(--font-stamp);
-      text-transform: uppercase;
-    }
-    .reply-send:active {
-      background: var(--surface-base);
-      color: var(--crt-green);
-    }
-
-    /* Open opps — form rows */
-    .opp-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 10px 0;
-    }
-    .opp-item + .opp-item { border-top: 1px solid var(--ink-faint); }
-
-    .opp-name {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--ink-primary);
-      margin-bottom: 3px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-    .opp-account {
-      font-size: 11px;
-      color: var(--ink-muted);
-      letter-spacing: 0.04em;
-    }
-
-    .opp-right { text-align: right; flex-shrink: 0; margin-left: 10px; }
-    .opp-amount {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--crt-green);
-      text-shadow: 0 0 4px var(--crt-glow);
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.04em;
-      font-family: var(--font-stamp);
-    }
-    .opp-stale {
-      font-size: 9px;
-      color: var(--amber);
-      margin-top: 4px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-
-    .opp-placeholder {
-      font-size: 11px;
-      color: var(--ink-faint);
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-
-    /* Follow-up rows */
-    .followup-item { padding: 10px 0; }
-    .followup-item + .followup-item { border-top: 1px solid var(--ink-faint); }
-    .followup-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--ink-primary);
-      margin-bottom: 4px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-    .followup-meta {
-      font-size: 9px;
-      color: var(--amber);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-
-    /* ── Itinerary pane ──────────────────────────────────── */
-    #map {
-      position: absolute;
-      inset: 0;
-      border-radius: 44px;
-    }
-
-    /* Rep map marker — chunky Y2K cyan crosshair */
-    .rep-marker {
-      width: 24px;
-      height: 24px;
-      position: relative;
-      cursor: pointer;
-      filter: drop-shadow(0 0 8px var(--y2k-cyan))
-              drop-shadow(0 0 14px rgba(0, 212, 255, 0.4));
-    }
-    .rep-marker::before,
-    .rep-marker::after {
-      content: '';
-      position: absolute;
-      background: var(--y2k-cyan);
-    }
-    .rep-marker::before {
-      /* horizontal bar */
-      left: 0; right: 0;
-      top: 50%;
-      height: 2px;
-      transform: translateY(-50%);
-    }
-    .rep-marker::after {
-      /* vertical bar */
-      top: 0; bottom: 0;
-      left: 50%;
-      width: 2px;
-      transform: translateX(-50%);
-    }
-
-    /* Stop markers — outlined phosphor square w/ stop number */
-    .stop-marker {
-      width: 22px;
-      height: 22px;
-      border: 2px solid var(--crt-green);
-      background: rgba(5, 6, 8, 0.55);
-      color: var(--crt-green);
-      font-family: var(--font-stamp);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0;
-      line-height: 18px;
-      text-align: center;
-      text-transform: uppercase;
-      cursor: pointer;
-      box-shadow: 0 0 8px rgba(51, 255, 102, 0.5),
-                  inset 0 0 4px rgba(51, 255, 102, 0.2);
-    }
-
-    /* Absence markers — small magenta filled square */
-    .absence-marker {
-      width: 16px;
-      height: 16px;
-      background: var(--synthwave);
-      border: 2px solid var(--synthwave);
-      box-shadow: 0 0 8px rgba(255, 45, 146, 0.55);
-      cursor: pointer;
-    }
-
-    /* Live-activity terminal readout (top of pane) */
-    .terminal-readout {
-      position: absolute;
-      top: 132px;
-      left: 14px; right: 14px;
-      z-index: 6;
-      background: var(--surface-base);
-      border: 2px solid var(--terminal-green);
-      padding: 8px 12px;
+      gap: 6px;
+      height: 20px;
+      padding: 0 8px;
+      background: var(--disclosure-blue);
+      color: var(--ui-light);
       font-family: var(--font-mono);
       font-size: 11px;
-      color: var(--terminal-green);
+      font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      text-shadow: 0 0 6px rgba(51, 255, 51, 0.65);
-      display: none;
-      align-items: center;
-      gap: 12px;
-    }
-    .terminal-readout.active { display: flex; }
-
-    .terminal-dot {
-      width: 8px; height: 8px;
-      background: var(--terminal-green);
-      box-shadow: 0 0 6px var(--terminal-green);
-      animation: crt-blink 1.4s steps(2) infinite;
-      flex-shrink: 0;
-    }
-
-    .terminal-label  { opacity: 0.7; font-weight: 700; flex-shrink: 0; }
-    .terminal-value  { flex: 1; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .terminal-suffix { font-weight: 700; flex-shrink: 0; }
-
-    /* Empty-route plaque */
-    .route-empty {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      z-index: 5;
-      pointer-events: none;
-      padding: 16px 22px;
-      background: var(--surface-base);
-      border: 2px solid var(--ink-faint);
-      max-width: 78%;
-    }
-    .route-empty.hidden { display: none; }
-    .route-empty-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--ink-primary);
-      letter-spacing: 0.18em;
-      margin-bottom: 6px;
-      font-family: var(--font-stamp);
-      text-transform: uppercase;
-    }
-    .route-empty-sub {
-      font-size: 10px;
-      color: var(--ink-muted);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-
-    /* Bottom sheet */
-    .sheet {
-      position: absolute;
-      left: 0; right: 0; bottom: 0;
-      z-index: 20;
-      display: flex;
-      flex-direction: column;
-      height: var(--sheet-h, 290px);
-      transition: height 0.32s cubic-bezier(0.4,0,0.2,1);
-      will-change: height;
-      touch-action: none;
-    }
-
-    .sheet-bg {
-      position: absolute;
-      inset: 0;
-      background: var(--surface-base);
-      border-top: 2px solid var(--ink-faint);
-      border-radius: 0 0 44px 44px;
-    }
-
-    .sheet-inner { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; padding-bottom: 110px; }
-
-    .sheet-handle-row {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px 0 8px;
-      cursor: grab;
-      flex-shrink: 0;
-    }
-    .sheet-handle-row:active { cursor: grabbing; }
-
-    .drag-handle { width: 36px; height: 3px; background: var(--ink-faint); margin-bottom: 6px; }
-
-    .sheet-today-label {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      font-family: var(--font-stamp);
-    }
-
-    .kpi-row {
-      display: flex;
-      gap: 0;
-      padding: 6px 14px 12px;
-      flex-shrink: 0;
-      border-bottom: 2px solid var(--ink-faint);
-      margin-bottom: 8px;
-    }
-
-    .kpi-card {
-      flex: 1;
-      background: transparent;
-      padding: 4px 10px;
-      min-width: 0;
-      border-right: 1px solid var(--ink-faint);
-    }
-    .kpi-card:last-child { border-right: none; }
-
-    .kpi-label {
-      font-size: 8px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: var(--ink-faint);
-      margin-bottom: 4px;
-      font-family: var(--font-stamp);
-    }
-    .kpi-value {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--ink-muted);
+      line-height: 1;
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      font-variant-numeric: tabular-nums;
-      font-family: var(--font-stamp);
+      position: relative;
     }
-    .kpi-value em { font-style: normal; color: var(--ink-primary); }
-
-    .progress-bar-track { height: 3px; background: var(--ink-faint); margin-top: 6px; }
-    .progress-bar-fill {
-      height: 100%;
-      background: var(--y2k-cyan);
-      box-shadow: 0 0 6px rgba(0, 212, 255, 0.6);
-      transition: width 0.4s ease;
-    }
-
-    .time-block {
-      display: inline-block;
-      width: 8px; height: 8px;
-      background: var(--status-go);
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-
-    .appt-list { flex: 1; overflow-y: auto; padding: 0 14px 12px; -webkit-overflow-scrolling: touch; }
-    .appt-list::-webkit-scrollbar { width: 3px; }
-    .appt-list::-webkit-scrollbar-track { background: transparent; }
-    .appt-list::-webkit-scrollbar-thumb { background: var(--ink-faint); }
-
-    .appt-card {
-      background: var(--surface-elevated);
-      border: 2px solid var(--ink-faint);
-      border-left-width: 4px;
-      border-radius: 0;
-      padding: 10px 12px;
-      margin-bottom: 8px;
-    }
-    .appt-card.status-scheduled   { border-left-color: var(--crt-green); }
-    .appt-card.status-in-progress { border-left-color: var(--amber); }
-    .appt-card.status-completed   { border-left-color: var(--status-go); }
-    .appt-card.status-cancelled   { border-left-color: var(--status-stop); }
-    .appt-card.status-none        { border-left-color: var(--ink-faint); }
-
-    .appt-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-
-    .appt-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 20px; height: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      background: var(--ink-faint);
-      color: var(--ink-primary);
-      margin-right: 8px;
-      flex-shrink: 0;
-      font-family: var(--font-stamp);
+    .window-title .title-text { flex-shrink: 0; }
+    .window-title .title-rule {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
       letter-spacing: 0;
+      opacity: 0.55;
+      white-space: nowrap;
     }
-
-    .appt-id {
-      font-size: 9px;
-      font-family: var(--font-mono);
-      color: var(--ink-faint);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+    .window-title .title-controls {
+      flex-shrink: 0;
+      letter-spacing: 0.18em;
+      opacity: 0.85;
     }
-
-    /* Status square (replaces rounded pill tag) */
-    .appt-status {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .appt-status::before {
-      content: '';
-      display: inline-block;
-      width: 9px; height: 9px;
-      background: currentColor;
-    }
-
-    .appt-status.status-scheduled   { color: var(--crt-green); }
-    .appt-status.status-in-progress { color: var(--amber); }
-    .appt-status.status-completed   { color: var(--status-go); }
-    .appt-status.status-cancelled   { color: var(--status-stop); }
-    .appt-status.status-none        { color: var(--ink-faint); }
-
-    .appt-subject {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--ink-primary);
-      margin-bottom: 4px;
-      line-height: 1.3;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-    .appt-meta {
-      font-size: 11px;
-      color: var(--ink-muted);
-      margin-top: 3px;
-      letter-spacing: 0.04em;
-    }
-
-    .loading-msg {
-      text-align: center;
-      padding: 24px;
-      color: var(--ink-faint);
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      font-family: var(--font-stamp);
-    }
-
-    /* Solid panel that occludes cards-scroll content beneath the
-       page indicator + FAB — prevents bleed-through on tall content. */
-    .nav-pad {
+    .window-title::after {
+      content: "";
       position: absolute;
       left: 0; right: 0; bottom: 0;
-      height: 160px;
-      z-index: 18;
-      pointer-events: none;
-      background: linear-gradient(
-        to top,
-        var(--surface-base) 60%,
-        rgba(0, 0, 0, 0)    100%
+      height: 2px;
+      background-image: linear-gradient(
+        to right,
+        rgba(232, 225, 209, 0.6) 0 1px,
+        transparent 1px 4px
       );
+      background-size: 4px 2px;
+      background-repeat: repeat-x;
     }
 
-    /* ── Page indicator — labeled segments ───────────────── */
-    .page-indicator {
-      position: absolute;
-      left: 0; right: 0;
-      bottom: 96px;
-      z-index: 22;
-      display: flex;
-      justify-content: center;
-      gap: 0;
-      pointer-events: none;
+    .window-body {
+      padding: 12px 12px 12px;
     }
+    .window-body.tight { padding: 10px 10px 10px; }
+    .window-body.flush { padding: 0; }
 
-    .page-segment {
-      pointer-events: all;
-      cursor: pointer;
-      font-family: var(--font-stamp);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.18em;
+    /* Stats card — no title, just a green-bordered box */
+    .stats-card {
+      background: var(--screen-bg);
+      border: 1px solid var(--phosphor-green);
+      box-shadow: 0 0 0 1px rgba(124, 255, 138, 0.35) inset;
+      padding: 9px 12px;
+      margin-bottom: 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--phosphor-green);
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--ink-muted);
-      padding: 6px 10px;
-      background: transparent;
-      border: none;
-      transition: color 0.18s;
+      line-height: 1.65;
+      text-shadow:
+        0 0 1px var(--phosphor-green),
+        0 0 4px rgba(124, 255, 138, 0.35);
     }
-    .page-segment.active {
-      color: var(--crt-green);
-      font-weight: 700;
-      text-shadow: 0 0 4px var(--crt-glow);
-    }
-    .page-segment:focus { outline: none; }
+    .stats-card .row1 { display: flex; gap: 18px; flex-wrap: wrap; }
 
-    .page-divider {
-      color: var(--ink-faint);
-      align-self: center;
-      pointer-events: none;
-      font-size: 11px;
-      font-family: var(--font-stamp);
+    .dash-rule {
+      border-top: 1px dashed rgba(141, 177, 139, 0.55);
+      margin: 8px 0;
     }
 
-    /* ── FAB ─────────────────────────────────────────────── */
-    @keyframes phosphor-pulse {
-      0%, 100% {
-        transform: translateX(-50%) scale(1);
-        box-shadow: 0 0 20px rgba(51, 255, 102, 0.4),
-                    0 0 40px rgba(51, 255, 102, 0.15);
-      }
-      50% {
-        transform: translateX(-50%) scale(0.97);
-        box-shadow: 0 0 26px rgba(51, 255, 102, 0.55),
-                    0 0 56px rgba(51, 255, 102, 0.22);
-      }
+    /* Terminal output */
+    .terminal-out {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--phosphor-green);
+      letter-spacing: 0.02em;
+    }
+    .terminal-out .line {
+      display: block;
+      white-space: pre-wrap;
+      text-shadow:
+        0 0 1px var(--phosphor-green),
+        0 0 4px rgba(124, 255, 138, 0.4),
+        0 0 10px rgba(124, 255, 138, 0.2);
+    }
+    .terminal-out .line::before {
+      content: "> ";
+      color: var(--text-dim);
+      text-shadow: none;
+    }
+    .terminal-out .line.recommendation {
+      color: var(--phosphor-green);
+      margin-top: 6px;
+    }
+    .terminal-out .caret {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      vertical-align: -2px;
+      background: var(--phosphor-green);
+      box-shadow: 0 0 5px var(--phosphor-green);
+      animation: blink 1s steps(2) infinite;
+      margin-left: 2px;
+    }
+    @keyframes blink {
+      0%, 49%   { opacity: 1; }
+      50%, 100% { opacity: 0; }
     }
 
-    .fab-mic {
-      position: absolute;
-      left: 50%;
-      bottom: 22px;
-      transform: translateX(-50%);
-      width: 56px; height: 56px;
-      border-radius: 50%;
-      background: var(--crt-green);
-      border: 3px solid var(--ink-primary);
-      color: var(--ink-primary);
-      cursor: pointer;
+    /* HOME — pixel astronaut hero + sparkles + brief */
+    .hero-wrap {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 25;
-      animation: phosphor-pulse 3s ease-in-out infinite;
-      box-shadow: 0 0 20px rgba(51, 255, 102, 0.4),
-                  0 0 40px rgba(51, 255, 102, 0.15);
+      padding: 18px 0 14px;
+      min-height: 230px;
     }
-    .fab-mic:active {
-      animation: none;
-      background: var(--surface-base);
-      color: var(--crt-green);
-      box-shadow: 0 0 14px rgba(51, 255, 102, 0.3);
+    .hero-mascot {
+      position: relative;
+      z-index: 2;
+      width: 192px;
+      height: 200px;
+      filter:
+        drop-shadow(0 0 6px rgba(91, 168, 229, 0.35))
+        drop-shadow(0 0 2px rgba(124, 255, 138, 0.3));
     }
+    .hero-mascot svg { display: block; width: 100%; height: 100%; }
 
-    /* ── Chat overlay ────────────────────────────────────── */
-    .chat-overlay {
+    /* Sparkles around hero */
+    .sparkle {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--disclosure-blue);
+      pointer-events: none;
+      z-index: 1;
+      text-shadow: 0 0 4px rgba(91, 168, 229, 0.5);
+      user-select: none;
+    }
+    .sparkle.sm { font-size: 10px; }
+    .sparkle.lg { font-size: 16px; }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.85; }
+      50%      { opacity: 0.35; }
+    }
+    .sparkle.tw { animation: twinkle 3s ease-in-out infinite; }
+    .sparkle.tw2 { animation: twinkle 4.4s ease-in-out infinite; }
+
+    /* ITINERARY — wireframe SVG map + stop window */
+    .itin-scroll {
       position: absolute;
       inset: 0;
-      z-index: 40;
-      display: none;
-      flex-direction: column;
-      justify-content: flex-end;
-      border-radius: 44px;
+      overflow-y: auto;
+      padding: 12px 12px 14px;
+    }
+    .itin-scroll::-webkit-scrollbar { width: 3px; }
+    .itin-scroll::-webkit-scrollbar-track { background: transparent; }
+    .itin-scroll::-webkit-scrollbar-thumb { background: var(--screen-border); }
+
+    .map-frame {
+      position: relative;
+      background: var(--screen-bg);
+      border: 1px solid var(--phosphor-green);
+      box-shadow: 0 0 0 1px rgba(124, 255, 138, 0.35) inset;
+      height: 280px;
+      margin-bottom: 12px;
       overflow: hidden;
     }
-    .chat-overlay.open { display: flex; }
-
-    .chat-overlay-backdrop {
+    .map-frame svg { display: block; width: 100%; height: 100%; }
+    .compass {
       position: absolute;
-      inset: 0;
-      background: rgba(8, 6, 4, 0.92);
-      cursor: pointer;
-    }
-
-    .chat-overlay-panel {
-      position: relative;
-      z-index: 1;
-      padding: 14px 14px 26px;
-      max-height: 86%;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: var(--surface-base);
-      border-top: 2px solid var(--ink-faint);
-    }
-
-    .chat-thread {
-      flex: 1 1 auto;
-      min-height: 0;
-      max-height: 50vh;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .chat-thread::-webkit-scrollbar { width: 3px; }
-    .chat-thread::-webkit-scrollbar-track { background: transparent; }
-    .chat-thread::-webkit-scrollbar-thumb { background: var(--ink-faint); }
-    .chat-thread:empty { display: none; }
-
-    /* Rep — Y2K input, deep slate with cyan border */
-    .bubble-rep {
-      align-self: flex-end;
-      background: var(--surface-elevated);
-      border: 2px solid var(--y2k-cyan);
-      border-radius: 0;
-      padding: 10px 13px;
-      font-size: 13px;
-      color: var(--ink-primary);
-      max-width: 85%;
-      line-height: 1.5;
+      top: 8px;
+      right: 10px;
       font-family: var(--font-mono);
-      box-shadow: 0 0 6px rgba(0, 212, 255, 0.25);
-    }
-
-    /* Agent — phosphor terminal */
-    .bubble-agent {
-      align-self: flex-start;
-      background: var(--surface-base);
-      border: 2px solid var(--terminal-green);
-      padding: 10px 13px;
-      font-size: 13px;
-      color: var(--terminal-green);
-      max-width: 90%;
-      line-height: 1.55;
-      font-family: var(--font-mono);
-      text-shadow: 0 0 3px rgba(51, 255, 51, 0.4);
-    }
-
-    .bubble-agent-prefix {
-      font-size: 9px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: var(--terminal-green);
-      opacity: 0.85;
-      margin-bottom: 4px;
-      display: block;
-      font-family: var(--font-stamp);
-    }
-
-    .standby {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .crt-cursor {
-      display: inline-block;
-      width: 10px; height: 14px;
-      background: var(--terminal-green);
-      box-shadow: 0 0 6px var(--terminal-green);
-      animation: crt-blink 1s steps(2) infinite;
-      flex-shrink: 0;
-    }
-
-    .standby-label {
       font-size: 11px;
-      letter-spacing: 0.18em;
+      color: var(--phosphor-green);
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 4px rgba(124, 255, 138, 0.55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      gap: 2px;
+      pointer-events: none;
+    }
+    .compass .arrow { font-size: 10px; }
+
+    /* Stop card body lines */
+    .stop-line {
+      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
+      line-height: 1.5;
+    }
+    .stop-line.name {
+      font-size: 16px;
+      letter-spacing: 0.1em;
+      color: var(--phosphor-green);
       text-transform: uppercase;
-      color: var(--terminal-green);
       font-weight: 700;
-      text-shadow: 0 0 3px rgba(51, 255, 51, 0.4);
-      font-family: var(--font-stamp);
+      margin-bottom: 4px;
+      text-shadow:
+        0 0 1px var(--phosphor-green),
+        0 0 5px rgba(124, 255, 138, 0.5);
+    }
+    .stop-line.addr { color: var(--text-main); font-size: 12px; text-transform: uppercase; }
+    .stop-line.time { color: var(--signal-yellow); font-size: 12px; text-transform: uppercase; text-shadow: 0 0 4px rgba(242, 199, 68, 0.45); margin-top: 4px; }
+    .stop-line.opp  { color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .stop-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
     }
 
-    .scheduling-indicator {
-      align-self: flex-start;
+    /* Double-bordered green key — bottom strip + inline buttons */
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 12px;
+      background: var(--screen-bg);
+      color: var(--phosphor-green);
+      border: 1px solid var(--phosphor-green);
+      box-shadow: inset 0 0 0 2px var(--screen-bg), inset 0 0 0 3px var(--phosphor-green);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-shadow:
+        0 0 1px var(--phosphor-green),
+        0 0 4px rgba(124, 255, 138, 0.45);
+      transition: none;
+    }
+    .key:focus { outline: none; }
+    .key:active { background: rgba(124, 255, 138, 0.16); }
+    .key:disabled { opacity: 0.5; cursor: not-allowed; }
+    .key.cyan {
+      color: var(--select-cyan);
+      border-color: var(--select-cyan);
+      box-shadow: inset 0 0 0 2px var(--screen-bg), inset 0 0 0 3px var(--select-cyan);
+      text-shadow: 0 0 4px rgba(139, 232, 255, 0.55);
+    }
+
+    /* ADMIN — record rows */
+    .record-row { font-family: var(--font-mono); }
+    .record-row + .record-row {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(141, 177, 139, 0.55);
+    }
+    .record-name {
+      font-size: 14px;
+      color: var(--phosphor-green);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 4px;
+      text-shadow:
+        0 0 1px var(--phosphor-green),
+        0 0 5px rgba(124, 255, 138, 0.45);
+    }
+    .record-meta {
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      line-height: 1.55;
+    }
+    .record-meta .urgent {
+      color: var(--alert-red);
+      text-shadow: 0 0 4px rgba(255, 122, 107, 0.4);
+    }
+    .record-meta .yellow {
+      color: var(--signal-yellow);
+      text-shadow: 0 0 4px rgba(242, 199, 68, 0.4);
+    }
+    .record-meta .ok { color: var(--phosphor-green); }
+    .record-source {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .record-quote {
+      font-size: 12px;
+      color: var(--text-main);
+      letter-spacing: 0.02em;
+      line-height: 1.5;
+      margin: 2px 0 6px;
+    }
+    .record-quote .tx-prefix {
+      color: var(--disclosure-blue);
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      margin-right: 6px;
+      text-shadow: 0 0 4px rgba(91, 168, 229, 0.55);
+    }
+    .record-tag {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border: 1px solid var(--alert-red);
+      color: var(--alert-red);
+      text-shadow: 0 0 4px rgba(255, 122, 107, 0.4);
+    }
+
+    /* Bottom control strip */
+    .control-panel {
+      flex-shrink: 0;
+      position: relative;
+      background: var(--crt-bg-tint);
+      border-top: 1px solid var(--disclosure-blue);
+    }
+
+    .assistant-zone {
+      position: relative;
+      height: 70px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: var(--surface-base);
-      border: 2px solid var(--terminal-green);
+      gap: 10px;
+      padding: 0 12px;
     }
 
-    .prompt-chips {
+    .mascot-mini-wrap {
+      flex-shrink: 0;
+      width: 42px;
+      height: 48px;
       display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 2px;
-      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      position: relative;
     }
-    .prompt-chips::-webkit-scrollbar { display: none; }
+    .mascot-mini {
+      width: 38px;
+      height: 42px;
+      filter: drop-shadow(0 0 3px rgba(91, 168, 229, 0.3));
+    }
+    .mascot-mini svg { display: block; width: 100%; height: 100%; }
 
-    .chip {
-      flex-shrink: 0;
-      background: var(--surface-elevated);
-      color: var(--ink-primary);
-      border: 2px solid var(--ink-faint);
-      border-radius: 0;
-      padding: 7px 12px;
-      font-size: 10px;
+    .mascot-status {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      font-family: var(--font-mono);
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.14em;
-      cursor: pointer;
-      font-family: var(--font-stamp);
-      text-transform: uppercase;
-      transition: border-color 0.12s, background 0.12s, color 0.12s;
+      opacity: 0;
+      transition: opacity 0.14s;
+      pointer-events: none;
     }
-    .chip:hover  { border-color: var(--crt-green); }
-    .chip:active { background: var(--crt-green); color: var(--surface-base); }
+    .mascot-status.show { opacity: 1; }
+    .mascot-status.ok   { color: var(--phosphor-green); text-shadow: 0 0 6px var(--phosphor-green); }
+    .mascot-status.err  { color: var(--alert-red);     text-shadow: 0 0 6px var(--alert-red); }
 
-    .chat-input-row {
+    /* Command-prompt input — double bordered green */
+    .chat-input-wrap {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      height: 42px;
+      background: var(--screen-bg);
+      border: 1px solid var(--phosphor-green);
+      box-shadow: inset 0 0 0 2px var(--screen-bg), inset 0 0 0 3px rgba(124, 255, 138, 0.6);
       display: flex;
-      gap: 8px;
-      align-items: flex-end;
-      flex-shrink: 0;
+      align-items: center;
+      padding: 0 8px 0 10px;
     }
-
+    .chat-input-wrap.focused {
+      border-color: var(--select-cyan);
+      box-shadow: inset 0 0 0 2px var(--screen-bg), inset 0 0 0 3px var(--select-cyan);
+    }
+    .chat-input-wrap .prompt-prefix {
+      flex-shrink: 0;
+      color: var(--phosphor-green);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      margin-right: 6px;
+      text-shadow: 0 0 4px rgba(124, 255, 138, 0.6);
+    }
     .chat-input {
       flex: 1;
-      background: var(--surface-elevated);
-      border: 2px solid var(--ink-faint);
-      border-radius: 0;
-      padding: 12px;
-      color: var(--ink-primary);
-      font-size: 13px;
-      resize: none;
-      height: 48px;
+      min-width: 0;
+      height: 100%;
+      padding: 0;
+      background: transparent;
+      border: none;
+      color: var(--phosphor-green);
       font-family: var(--font-mono);
-      transition: border-color 0.12s;
-      overflow: hidden;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      resize: none;
+      line-height: 42px;
+      caret-color: transparent;
+      text-shadow: 0 0 4px rgba(124, 255, 138, 0.4);
     }
-
     .chat-input::placeholder {
-      color: var(--ink-faint);
-      letter-spacing: 0.06em;
-      font-family: var(--font-stamp);
-      text-transform: uppercase;
-      font-size: 11px;
+      color: var(--phosphor-green);
+      opacity: 0.6;
+      letter-spacing: 0.04em;
+      text-transform: lowercase;
     }
-    .chat-input:focus { outline: none; border-color: var(--crt-green); }
+    .chat-input:focus { outline: none; }
+    .chat-input:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .send-btn {
-      width: 48px; height: 48px;
-      background: var(--crt-green);
-      border: 2px solid var(--crt-green);
-      border-radius: 0;
-      color: var(--ink-primary);
+    .chat-cursor {
+      flex-shrink: 0;
+      width: 9px;
+      height: 16px;
+      background: var(--phosphor-green);
+      box-shadow: 0 0 5px var(--phosphor-green);
+      margin-left: 4px;
+      animation: blink 1s steps(2) infinite;
+    }
+
+    /* Hero key — double-bordered, label can wrap to 2 lines */
+    .hero-key {
+      flex-shrink: 0;
+      min-width: 96px;
+      max-width: 120px;
+      height: 42px;
+      padding: 0 8px;
+      background: var(--screen-bg);
+      color: var(--phosphor-green);
+      border: 1px solid var(--phosphor-green);
+      box-shadow: inset 0 0 0 2px var(--screen-bg), inset 0 0 0 3px var(--phosphor-green);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
       cursor: pointer;
+      line-height: 1.15;
+      text-shadow:
+        0 0 1px var(--phosphor-green),
+        0 0 4px rgba(124, 255, 138, 0.45);
+      white-space: pre-line;
+    }
+    .hero-key:focus { outline: none; }
+    .hero-key:active { background: rgba(124, 255, 138, 0.16); }
+    .hero-key:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Bottom nav — ▣ HOME │ ITINERARY │ ADMIN */
+    .bottom-nav {
+      height: 32px;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+      gap: 0;
+      background: var(--crt-bg-tint);
+      border-top: 1px solid rgba(91, 168, 229, 0.4);
+    }
+    .nav-tab {
+      flex: 0 0 auto;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 100%;
+    }
+    .nav-tab .nav-led {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: transparent;
       flex-shrink: 0;
     }
-    .send-btn:active {
-      background: var(--surface-base);
-      color: var(--crt-green);
+    .nav-tab.active {
+      color: var(--phosphor-green);
+      text-shadow:
+        0 0 1px var(--phosphor-green),
+        0 0 5px rgba(124, 255, 138, 0.5);
     }
-    .send-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .nav-tab.active .nav-led {
+      background: var(--phosphor-green);
+      box-shadow: 0 0 5px var(--phosphor-green);
     }
+    .nav-divider {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      user-select: none;
+    }
+    .nav-tab:focus { outline: none; }
+
+    /* Pixel mascot — astronaut SVG sprite */
+    .astro {
+      shape-rendering: crispEdges;
+      image-rendering: pixelated;
+    }
+    @keyframes blink-eyes {
+      0%, 92%, 100% { opacity: 1; }
+      94%, 96%      { opacity: 0; }
+    }
+    .astro .eye { animation: blink-eyes 4s infinite; }
+    @keyframes wave {
+      0%, 100% { transform: rotate(-3deg); }
+      50%      { transform: rotate(3deg); }
+    }
+    .astro .wave-arm {
+      transform-origin: 12px 9px;
+      transform-box: fill-box;
+      animation: wave 2.4s ease-in-out infinite;
+    }
+    @keyframes flash-green {
+      0%, 100% { fill: var(--ui-light); }
+      50%      { fill: var(--terminal-green); }
+    }
+    @keyframes flash-red {
+      0%, 100% { fill: var(--ui-light); }
+      50%      { fill: var(--alert-red); }
+    }
+    .astro.confirmed .suit-fill { animation: flash-green 0.24s 2; }
+    .astro.error     .suit-fill { animation: flash-red   0.24s 2; }
+
+    /* Selected stop reticle pulse */
+    @keyframes ret-pulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.4; }
+    }
+    .reticle { animation: ret-pulse 2.4s ease-in-out infinite; }
   </style>
 </head>
 <body>
-  <div class="phone">
-    <div class="island"></div>
-    <div class="screen">
 
-      <!-- Header overlay (shared across all panes) -->
-      <div class="header-overlay">
-        <div class="surveillance-bar">NEBERDINE-CLAUDE BRIDGE // STATUS: NOMINAL // 0142 ACTIVE</div>
-        <div class="status-bar">
-          <span class="status-time" id="clock">9:41</span>
-          <span class="status-icons">&#9632;&#9632;&#9632; &#9632; 100%</span>
-        </div>
-        <div class="brand-row">
-          <div class="brand-mark">
-            <span class="brand-name">Field Agent</span>
-            <span class="brand-sub">FIELD AGENT // VERSION 0.1.0 // CLAUDE CODE BUILD</span>
-            <span class="brand-monitored">MONITORED &middot; SESSION 0142</span>
-            <div class="brand-rule"></div>
-          </div>
-          <div class="sf-status">
-            <span class="sf-dot" id="sf-dot"></span>
-            <span id="sf-label">SF &middot; STANDBY</span>
-          </div>
+<!-- Shared pixel astronaut sprite — used at both sizes via <use> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="astro-sprite" viewBox="0 0 16 18">
+    <!-- Antennae -->
+    <rect x="6"  y="0" width="1" height="1" fill="#5BA8E5"/>
+    <rect x="9"  y="0" width="1" height="1" fill="#5BA8E5"/>
+    <rect x="6"  y="1" width="1" height="1" fill="#E8E1D1"/>
+    <rect x="9"  y="1" width="1" height="1" fill="#E8E1D1"/>
+
+    <!-- Helmet outline (cream) -->
+    <rect x="4"  y="2" width="8" height="1" fill="#E8E1D1" class="suit-fill"/>
+    <rect x="3"  y="3" width="1" height="3" fill="#E8E1D1" class="suit-fill"/>
+    <rect x="12" y="3" width="1" height="3" fill="#E8E1D1" class="suit-fill"/>
+    <rect x="4"  y="6" width="8" height="1" fill="#E8E1D1" class="suit-fill"/>
+
+    <!-- Helmet visor interior (blue) -->
+    <rect x="4"  y="3" width="8" height="3" fill="#5BA8E5"/>
+    <rect x="5"  y="3" width="1" height="1" fill="#A5D8FF"/>
+
+    <!-- Eyes -->
+    <rect x="6"  y="4" width="1" height="2" fill="#0b0f0a" class="eye"/>
+    <rect x="9"  y="4" width="1" height="2" fill="#0b0f0a" class="eye"/>
+
+    <!-- Neck collar -->
+    <rect x="6"  y="7" width="4" height="1" fill="#E8E1D1" class="suit-fill"/>
+
+    <!-- Torso -->
+    <rect x="5"  y="8"  width="6" height="1" fill="#E8E1D1" class="suit-fill"/>
+    <rect x="4"  y="9"  width="7" height="1" fill="#E8E1D1" class="suit-fill"/>
+    <rect x="4"  y="10" width="7" height="1" fill="#E8E1D1" class="suit-fill"/>
+    <rect x="4"  y="11" width="7" height="1" fill="#E8E1D1" class="suit-fill"/>
+    <rect x="5"  y="12" width="5" height="1" fill="#E8E1D1" class="suit-fill"/>
+
+    <!-- Heart cluster on chest (blue plus) -->
+    <rect x="7"  y="9"  width="1" height="1" fill="#5BA8E5"/>
+    <rect x="8"  y="9"  width="1" height="1" fill="#5BA8E5"/>
+    <rect x="6"  y="10" width="1" height="1" fill="#5BA8E5"/>
+    <rect x="9"  y="10" width="1" height="1" fill="#5BA8E5"/>
+    <rect x="7"  y="11" width="2" height="1" fill="#5BA8E5"/>
+
+    <!-- Left arm -->
+    <rect x="3"  y="9"  width="1" height="3" fill="#E8E1D1" class="suit-fill"/>
+
+    <!-- Right arm raised in a wave -->
+    <g class="wave-arm">
+      <rect x="11" y="8" width="1" height="1" fill="#E8E1D1" class="suit-fill"/>
+      <rect x="12" y="6" width="1" height="2" fill="#E8E1D1" class="suit-fill"/>
+      <rect x="13" y="4" width="1" height="2" fill="#E8E1D1" class="suit-fill"/>
+      <rect x="13" y="3" width="1" height="1" fill="#E8E1D1" class="suit-fill"/>
+    </g>
+
+    <!-- Belt accent -->
+    <rect x="5"  y="11" width="1" height="1" fill="#5BA8E5"/>
+    <rect x="9"  y="11" width="1" height="1" fill="#5BA8E5"/>
+
+    <!-- Legs -->
+    <rect x="5"  y="13" width="2" height="2" fill="#E8E1D1" class="suit-fill"/>
+    <rect x="8"  y="13" width="2" height="2" fill="#E8E1D1" class="suit-fill"/>
+
+    <!-- Boots -->
+    <rect x="4"  y="15" width="3" height="1" fill="#E8E1D1" class="suit-fill"/>
+    <rect x="8"  y="15" width="3" height="1" fill="#E8E1D1" class="suit-fill"/>
+    <rect x="4"  y="16" width="3" height="1" fill="#5BA8E5"/>
+    <rect x="8"  y="16" width="3" height="1" fill="#5BA8E5"/>
+  </symbol>
+</svg>
+
+<div class="phone">
+  <div class="island"></div>
+  <div class="screen">
+
+    <!-- ── Micro header ───────────────────────────────────── -->
+    <div class="micro-header">
+      <div class="mh-row">
+        <div class="left">
+          <span>FIELD AGENT</span>
+          <span>MFI-83</span>
+          <span>SUBJ: J. KIRKWOOD</span>
+          <span>BAY-04</span>
         </div>
       </div>
+      <div class="mh-row">
+        <div class="left">
+          <span>MCP: <span id="sf-label">LINKED</span><span class="mh-led" id="sf-dot"></span></span>
+        </div>
+        <div class="right">
+          <span id="clock">13:59:47</span>
+        </div>
+      </div>
+    </div>
 
-      <!-- Three swipeable panes (Itinerary | Home | Admin) -->
+    <!-- ── Panes (Home | Itinerary | Admin) ──────────────── -->
+    <div class="panes-wrap">
       <div class="panes" id="panes">
 
-        <!-- LEFT PANE: ITINERARY -->
-        <div class="pane" id="pane-itinerary">
-          <div id="map"></div>
-
-          <div class="terminal-readout" id="terminal-readout">
-            <span class="terminal-dot"></span>
-            <span class="terminal-label">NEXT STOP</span>
-            <span class="terminal-value" id="terminal-stop">&mdash;</span>
-            <span class="terminal-suffix" id="terminal-eta">&mdash;</span>
-          </div>
-
-          <div class="route-empty" id="route-empty">
-            <div class="route-empty-title">No Route Generated</div>
-            <div class="route-empty-sub">Awaiting Instruction</div>
-          </div>
-
-          <div class="sheet" id="sheet" style="display:none;">
-            <div class="sheet-bg"></div>
-            <div class="sheet-inner">
-              <div class="sheet-handle-row">
-                <div class="drag-handle"></div>
-                <span class="sheet-today-label">&mdash; TODAY &mdash;</span>
-              </div>
-
-              <div class="kpi-row">
-                <div class="kpi-card">
-                  <div class="kpi-label">Stops</div>
-                  <div class="kpi-value" id="kpi-stops"><em>&mdash;</em></div>
-                  <div class="progress-bar-track">
-                    <div class="progress-bar-fill" id="kpi-progress" style="width:0%"></div>
-                  </div>
-                </div>
-                <div class="kpi-card">
-                  <div class="kpi-label">Next</div>
-                  <div class="kpi-value" id="kpi-next"><em>&mdash;</em></div>
-                </div>
-                <div class="kpi-card">
-                  <div class="kpi-label">Status</div>
-                  <div class="kpi-value" id="kpi-time">
-                    <span class="time-block"></span><em>On Track</em>
-                  </div>
-                </div>
-              </div>
-
-              <div class="appt-list" id="appt-list">
-                <div class="loading-msg">Processing. Stand By.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- CENTER PANE: HOME (default) -->
+        <!-- HOME -->
         <div class="pane" id="pane-home">
-          <div class="cards-scroll">
-            <div class="greeting-section">
-              <div class="greeting" id="greeting">Good morning, Johnny</div>
-            </div>
+          <div class="pane-scroll">
 
-            <div class="context-card">
-              <div class="card-label">&mdash; Today's Brief &mdash;</div>
-              <div class="brief-text loading" id="brief-text">Processing. Stand By.</div>
-              <div class="brief-meta" id="brief-meta"></div>
-            </div>
+            <div class="hero-wrap">
+              <span class="sparkle lg tw"  style="top: 8%;  left: 10%; opacity: 0.85;">+</span>
+              <span class="sparkle sm tw2" style="top: 14%; left: 22%; opacity: 0.55;">+</span>
+              <span class="sparkle tw"     style="top: 6%;  left: 38%; opacity: 0.4;">+</span>
+              <span class="sparkle sm tw2" style="top: 18%; left: 54%; opacity: 0.6;">+</span>
+              <span class="sparkle lg tw"  style="top: 4%;  right: 12%; opacity: 0.7;">+</span>
+              <span class="sparkle tw2"    style="top: 18%; right: 28%; opacity: 0.45;">+</span>
+              <span class="sparkle sm tw"  style="top: 30%; right: 8%;  opacity: 0.8;">+</span>
+              <span class="sparkle tw2"    style="top: 56%; left: 6%;   opacity: 0.55;">+</span>
+              <span class="sparkle sm tw"  style="top: 64%; left: 18%;  opacity: 0.7;">+</span>
+              <span class="sparkle lg tw2" style="top: 50%; right: 6%;  opacity: 0.5;">+</span>
+              <span class="sparkle sm tw"  style="top: 70%; right: 22%; opacity: 0.65;">+</span>
+              <span class="sparkle tw2"    style="top: 84%; right: 12%; opacity: 0.4;">+</span>
+              <span class="sparkle sm tw"  style="top: 88%; left: 30%;  opacity: 0.6;">+</span>
+              <span class="sparkle lg tw2" style="top: 38%; left: 46%;  opacity: 0.25;">+</span>
 
-            <div class="context-card">
-              <div class="card-label">&mdash; Open Opps &middot; Needs Follow-Up &mdash;</div>
-              <div id="opps-content">
-                <div class="opp-placeholder">Processing. Stand By.</div>
+              <div class="hero-mascot">
+                <svg class="astro idle" id="astro-hero" viewBox="0 0 16 18">
+                  <use href="#astro-sprite"/>
+                </svg>
               </div>
             </div>
+
+            <div class="window">
+              <div class="window-title">
+                <span class="title-text">DAILY BRIEF</span>
+                <span class="title-rule">─────────────────────</span>
+                <span class="title-controls">─ □ x</span>
+              </div>
+              <div class="window-body">
+                <div class="terminal-out" id="brief-out">
+                  <span class="line">initializing secure channel...</span>
+                  <span class="line">pulling priority signals...</span>
+                  <span class="line">generating brief...<span class="caret"></span></span>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <!-- RIGHT PANE: ADMIN -->
+        <!-- ITINERARY -->
+        <div class="pane" id="pane-itinerary">
+          <div class="itin-scroll">
+
+            <div class="stats-card">
+              <div class="row1">
+                <span><span id="rs-stops">10</span> STOPS</span>
+                <span>FINAL: <span id="rs-final">—</span></span>
+                <span>BUFFER: <span id="rs-buffer">09 MIN</span></span>
+              </div>
+              <div>SAN MATEO CONSTRAINT APPLIED</div>
+            </div>
+
+            <div class="map-frame" id="map-frame">
+              <svg viewBox="0 0 360 280" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <pattern id="grid40" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M40 0 L0 0 L0 40" fill="none" stroke="#5BA8E5" stroke-width="0.5" opacity="0.18"/>
+                  </pattern>
+                </defs>
+                <rect width="360" height="280" fill="url(#grid40)"/>
+
+                <!-- Land mass outline -->
+                <polygon
+                  points="
+                    20,30 60,18 100,28 140,20 168,40 178,60 170,90 192,100
+                    220,118 235,140 240,170 232,200 210,222 180,240 150,250 122,254
+                    100,260 78,256 58,242 40,220 28,196 22,170 18,140 22,108 18,80 14,60 18,42
+                  "
+                  fill="rgba(124, 255, 138, 0.04)"
+                  stroke="#7CFF8A"
+                  stroke-width="1"
+                  stroke-opacity="0.85"
+                />
+                <polyline
+                  points="150,80 160,98 180,108 200,128 212,150 210,178 192,200 170,210 150,206 138,190 132,170 138,150 144,128 150,108"
+                  fill="none"
+                  stroke="#7CFF8A"
+                  stroke-width="0.8"
+                  stroke-opacity="0.6"
+                />
+
+                <!-- Dashed route polyline -->
+                <polyline id="route-line"
+                  points="50,60 80,90 110,75 95,120 130,140 160,125 145,170 110,200 80,225 60,250"
+                  fill="none"
+                  stroke="#A7F5B2"
+                  stroke-width="1"
+                  stroke-dasharray="3 3"
+                  opacity="0.95"
+                />
+
+                <g id="stop-targets" font-family="IBM Plex Mono, monospace" font-size="8" fill="#7CFF8A"></g>
+                <g id="selected-reticle"></g>
+              </svg>
+              <div class="compass">
+                <span>N</span>
+                <span class="arrow">▲</span>
+              </div>
+            </div>
+
+            <div class="window">
+              <div class="window-title">
+                <span class="title-text" id="sc-num">STOP 01</span>
+                <span class="title-rule">─────────────────────</span>
+                <span class="title-controls">─ □ x</span>
+              </div>
+              <div class="window-body">
+                <div class="stop-line name" id="sc-name">EMPLOYNET</div>
+                <div class="stop-line addr" id="sc-addr">128 BRENTWOOD DR, SOUTH SAN FRANCISCO, CA</div>
+                <div class="stop-line time" id="sc-time">TIME PENDING</div>
+                <div class="dash-rule"></div>
+                <div class="stop-line opp" id="sc-opp">DISCOVERY · $0K</div>
+                <div class="stop-actions">
+                  <button class="key" id="sc-brief-btn" type="button">Load Visit Brief</button>
+                  <button class="key" id="sc-next-btn" type="button">Next &gt;&gt;</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ADMIN -->
         <div class="pane" id="pane-admin">
-          <div class="cards-scroll">
-            <div class="section-dash">&mdash; Today's Todos &mdash;</div>
+          <div class="pane-scroll">
 
-            <div class="context-card" id="card-attention">
-              <div class="card-label">&mdash; Needs Attention &mdash;</div>
-
-              <div class="slack-msg" id="slack-msg-0">
-                <div class="slack-avatar">MR</div>
-                <div class="slack-body">
-                  <div class="slack-source">From Slack</div>
-                  <div class="slack-header">
-                    <span class="slack-sender">Maya R</span>
-                    <span class="slack-channel">#deals</span>
-                    <span class="slack-time">10:14 AM</span>
-                  </div>
-                  <div class="slack-text">any update on Acme Industries?</div>
-                  <div class="slack-reply-area" id="reply-area-0">
-                    <textarea class="reply-input" id="reply-input-0" placeholder="Reply in #deals…"></textarea>
-                    <button class="reply-send" onclick="sendReply(0)">Send to Slack</button>
-                  </div>
-                </div>
+            <div class="window" id="ledger-window" style="display:none;">
+              <div class="window-title">
+                <span class="title-text">FIELD NOTE PROCESSED</span>
+                <span class="title-rule">─────────────────────</span>
+                <span class="title-controls">─ □ x</span>
               </div>
+              <div class="window-body">
+                <div class="terminal-out" id="ledger-out"></div>
+              </div>
+            </div>
 
-              <div class="slack-msg" id="slack-msg-1">
-                <div class="slack-avatar">DT</div>
-                <div class="slack-body">
-                  <div class="slack-source">From Slack</div>
-                  <div class="slack-header">
-                    <span class="slack-sender">Devon T</span>
-                    <span class="slack-channel">DM</span>
-                    <span class="slack-time">9:52 AM</span>
-                  </div>
-                  <div class="slack-text">can you sign the vendor NDA before EOD?</div>
-                  <div class="slack-reply-area" id="reply-area-1">
-                    <textarea class="reply-input" id="reply-input-1" placeholder="Reply to Devon T…"></textarea>
-                    <button class="reply-send" onclick="sendReply(1)">Send to Slack</button>
-                  </div>
+            <div class="window">
+              <div class="window-title">
+                <span class="title-text">FIELD SIGNALS</span>
+                <span class="title-rule">─────────────────────</span>
+                <span class="title-controls">─ □ x</span>
+              </div>
+              <div class="window-body">
+                <div class="record-row">
+                  <div class="record-name">NORTHWIND SOFTWARE</div>
+                  <div class="record-meta">close-date pressure · <span class="yellow">5 days quiet</span></div>
+                </div>
+                <div class="record-row">
+                  <div class="record-name">ISIS TOYOTA</div>
+                  <div class="record-meta">account rotation gap · <span class="urgent">12 days quiet</span></div>
+                </div>
+                <div class="record-row">
+                  <div class="record-name">BRACK INDUSTRIES</div>
+                  <div class="record-meta">campaign intent detected · confirm bob</div>
                 </div>
               </div>
             </div>
 
-            <div class="context-card">
-              <div class="card-label">&mdash; Follow-Ups &mdash;</div>
-              <div class="followup-item">
-                <div class="followup-title">Review redlines on vendor MSA</div>
-                <div class="followup-meta">Due Tomorrow</div>
+            <div class="window">
+              <div class="window-title">
+                <span class="title-text">COMM INTAKE</span>
+                <span class="title-rule">─────────────────────</span>
+                <span class="title-controls">─ □ x</span>
+              </div>
+              <div class="window-body">
+                <div class="record-row" id="slack-msg-0">
+                  <div class="record-source">Maya R. / #deals</div>
+                  <div class="record-quote"><span class="tx-prefix">TX</span>"Any update on Acme Industries?"</div>
+                  <span class="record-tag">Response Required</span>
+                </div>
+                <div class="record-row" id="slack-msg-1">
+                  <div class="record-source">Devon T. / Direct</div>
+                  <div class="record-quote"><span class="tx-prefix">TX</span>"Can you sign the vendor NDA before EOD?"</div>
+                  <span class="record-tag">Admin Blocker</span>
+                </div>
               </div>
             </div>
+
+            <div class="window">
+              <div class="window-title">
+                <span class="title-text">ACTION QUEUE</span>
+                <span class="title-rule">─────────────────────</span>
+                <span class="title-controls">─ □ x</span>
+              </div>
+              <div class="window-body">
+                <div class="record-row">
+                  <div class="record-name">REVIEW REDLINES ON VENDOR MSA</div>
+                  <div class="record-meta"><span class="urgent">due tomorrow</span></div>
+                </div>
+                <div class="record-row">
+                  <div class="record-name">PROCUREMENT FOLLOW-UP FOR BRACK</div>
+                  <div class="record-meta"><span class="yellow">due this week</span></div>
+                </div>
+                <div class="record-row">
+                  <div class="record-name">CONFIRM BOB FOR GIANTS OUTING</div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
       </div><!-- .panes -->
+    </div><!-- .panes-wrap -->
 
-      <!-- Solid fade behind indicator + FAB — occludes content beneath -->
-      <div class="nav-pad"></div>
-
-      <!-- Page indicator (labeled segments) -->
-      <div class="page-indicator">
-        <button class="page-segment" data-pane="0">Itinerary</button>
-        <span class="page-divider">&#9474;</span>
-        <button class="page-segment active" data-pane="1">Home</button>
-        <span class="page-divider">&#9474;</span>
-        <button class="page-segment" data-pane="2">Admin</button>
-      </div>
-
-      <!-- Persistent voice FAB -->
-      <button class="fab-mic" id="fab-mic" aria-label="Voice agent">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="9" y="2" width="6" height="12" rx="3"/>
-          <path d="M19 11v1a7 7 0 0 1-14 0v-1"/>
-          <line x1="12" y1="19" x2="12" y2="22"/>
-          <line x1="8" y1="22" x2="16" y2="22"/>
-        </svg>
-      </button>
-
-      <!-- Chat overlay (FAB-driven) -->
-      <div class="chat-overlay" id="chat-overlay">
-        <div class="chat-overlay-backdrop" id="chat-overlay-backdrop"></div>
-        <div class="chat-overlay-panel">
-          <div class="chat-thread" id="chat-thread"></div>
-          <div class="prompt-chips" id="prompt-chips"></div>
-          <div class="chat-input-row">
-            <textarea class="chat-input" id="chat-input" placeholder="Query the agent."></textarea>
-            <button class="send-btn" id="send-btn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
-            </button>
+    <!-- ── Control panel (mascot + input + hero) ────────── -->
+    <div class="control-panel">
+      <div class="assistant-zone">
+        <div class="mascot-mini-wrap">
+          <div class="mascot-mini">
+            <svg class="astro idle" id="astro-mini" viewBox="0 0 16 18">
+              <use href="#astro-sprite"/>
+            </svg>
           </div>
+          <span class="mascot-status" id="mascot-status"></span>
         </div>
+
+        <div class="chat-input-wrap" id="chat-wrap">
+          <span class="prompt-prefix" aria-hidden="true">&gt;</span>
+          <textarea class="chat-input" id="chat-input" rows="1" placeholder="plan my"
+                    autocomplete="off" autocorrect="off" autocapitalize="off"
+                    spellcheck="false" name="field-agent-cmd"></textarea>
+          <div class="chat-cursor" aria-hidden="true"></div>
+        </div>
+
+        <button class="hero-key" id="hero-btn" type="button">PLAN TODAY</button>
       </div>
 
-    </div><!-- .screen -->
-  </div><!-- .phone -->
+      <div class="bottom-nav">
+        <button class="nav-tab active" data-pane="0" type="button"><span class="nav-led"></span>HOME</button>
+        <span class="nav-divider">│</span>
+        <button class="nav-tab" data-pane="1" type="button"><span class="nav-led"></span>ITINERARY</button>
+        <span class="nav-divider">│</span>
+        <button class="nav-tab" data-pane="2" type="button"><span class="nav-led"></span>ADMIN</button>
+      </div>
+    </div>
 
-  <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
-  <script>
-    // ── Helpers ───────────────────────────────────────────────
-    function esc(s) {
-      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  </div><!-- .screen -->
+</div><!-- .phone -->
+
+<script>
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Clock — 24h with seconds
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Mascot state — toggles classes on both hero + mini SVG
+  const heroAstro = document.getElementById('astro-hero');
+  const miniAstro = document.getElementById('astro-mini');
+  const mascotStatus = document.getElementById('mascot-status');
+
+  function setMascot(state) {
+    [heroAstro, miniAstro].forEach(el => {
+      el.classList.remove('idle', 'listening', 'thinking', 'confirmed', 'error');
+      el.classList.add(state);
+    });
+  }
+  function showMascotStatus(kind) {
+    mascotStatus.classList.remove('ok', 'err', 'show');
+    mascotStatus.textContent = kind === 'ok' ? '✓' : '✗';
+    mascotStatus.classList.add(kind === 'ok' ? 'ok' : 'err', 'show');
+    setTimeout(() => mascotStatus.classList.remove('show'), 900);
+  }
+  function flashMascot(state, ms = 700) {
+    setMascot(state);
+    if (state === 'confirmed') showMascotStatus('ok');
+    if (state === 'error')     showMascotStatus('err');
+    setTimeout(() => setMascot('idle'), ms);
+  }
+
+  // Health check
+  async function checkHealth() {
+    const dot   = document.getElementById('sf-dot');
+    const label = document.getElementById('sf-label');
+    try {
+      const d = await fetch('/api/health').then(r => r.json());
+      const ok = d.ok && d.sfAlias;
+      dot.className = 'mh-led' + (ok ? '' : ' disconnected');
+      label.textContent = ok ? 'LINKED' : 'ERROR';
+    } catch {
+      dot.className = 'mh-led disconnected';
+      label.textContent = 'OFFLINE';
     }
+  }
 
-    // ── Clock ─────────────────────────────────────────────────
-    function updateClock() {
-      const now = new Date();
-      const h = now.getHours() % 12 || 12;
-      const m = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('clock').textContent = `${h}:${m}`;
-    }
-    updateClock();
-    setInterval(updateClock, 10000);
-
-    // ── Greeting ──────────────────────────────────────────────
-    (function setGreeting() {
-      const h = new Date().getHours();
-      const part = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
-      document.getElementById('greeting').textContent = `Good ${part}, Johnny`;
-    })();
-
-    // ── Health check ──────────────────────────────────────────
-    async function checkHealth() {
-      const dot   = document.getElementById('sf-dot');
-      const label = document.getElementById('sf-label');
-      try {
-        const d = await fetch('/api/health').then(r => r.json());
-        const ok = d.ok && d.sfAlias;
-        dot.className     = 'sf-dot ' + (ok ? 'connected' : 'disconnected');
-        label.textContent = ok ? 'SF · ONLINE' : 'SF · ERROR';
-      } catch {
-        dot.className     = 'sf-dot disconnected';
-        label.textContent = 'SF · OFFLINE';
-      }
-    }
-
-    // ── Daily brief ───────────────────────────────────────────
-    async function fetchDailyBrief() {
-      const textEl = document.getElementById('brief-text');
-      const metaEl = document.getElementById('brief-meta');
-      try {
-        const data = await fetch('/api/daily-brief', { method: 'POST' }).then(r => r.json());
-        textEl.textContent = data.brief;
-        textEl.classList.remove('loading');
-        if (data.generatedAt) {
-          const d = new Date(data.generatedAt);
-          const h = d.getHours() % 12 || 12;
-          const m = String(d.getMinutes()).padStart(2, '0');
-          const ampm = d.getHours() >= 12 ? 'PM' : 'AM';
-          metaEl.textContent = `Generated Today · ${h}:${m} ${ampm}`;
+  // Type-on terminal output
+  async function typeIntoTerminal(targetEl, lines, opts = {}) {
+    const { charDelay = 22, lineDelay = 80, instant = false, withCursor = false } = opts;
+    targetEl.innerHTML = '';
+    for (let i = 0; i < lines.length; i++) {
+      const text = lines[i];
+      const isRec = /^recommendation:/i.test(text);
+      const span = document.createElement('span');
+      span.className = 'line' + (isRec ? ' recommendation' : '');
+      targetEl.appendChild(span);
+      if (instant) {
+        span.textContent = text;
+      } else {
+        for (let c = 0; c < text.length; c++) {
+          span.textContent += text[c];
+          await new Promise(r => setTimeout(r, charDelay));
         }
-      } catch {
-        textEl.textContent = 'BRIEF UNAVAILABLE. RETRY LATER.';
-        textEl.classList.remove('loading');
+        await new Promise(r => setTimeout(r, lineDelay));
       }
     }
+    if (withCursor && targetEl.lastChild) {
+      const caret = document.createElement('span');
+      caret.className = 'caret';
+      targetEl.lastChild.appendChild(caret);
+    }
+  }
 
-    // ── Open opps ─────────────────────────────────────────────
-    async function fetchOpenOpps() {
-      const el = document.getElementById('opps-content');
-      try {
-        const data = await fetch('/api/open-opps').then(r => r.json());
-        if (!data.ok || !data.opps || !data.opps.length) {
-          el.innerHTML = '<div class="opp-placeholder">No Opps Queued.</div>';
-          return;
+  function normalizeBriefLines(raw) {
+    if (!raw) return [];
+    const trimmed = raw.trim();
+    const splitOnNewlines = trimmed.split(/\n+/).map(l => l.replace(/^[>\-•\s]+/, '').trim()).filter(Boolean);
+    if (splitOnNewlines.length >= 3) return splitOnNewlines.slice(0, 7);
+    return trimmed.split(/(?<=[\.!?])\s+/).map(s => s.replace(/[\.!?]+$/, '').toLowerCase().trim()).filter(Boolean).slice(0, 7);
+  }
+
+  let briefRendered = false;
+  async function fetchDailyBrief() {
+    const out = document.getElementById('brief-out');
+    try {
+      const data = await fetch('/api/daily-brief', { method: 'POST' }).then(r => r.json());
+      const lines = normalizeBriefLines(data.brief);
+      const boot = [
+        "initializing secure channel...",
+        "pulling priority signals...",
+        "generating brief...",
+      ];
+      if (briefRendered) {
+        await typeIntoTerminal(out, [...boot, ...lines], { instant: true });
+        return;
+      }
+      // Boot lines, then pause on the caret, then stream the real brief
+      await typeIntoTerminal(out, boot, { charDelay: 22, lineDelay: 90, withCursor: true });
+      await new Promise(r => setTimeout(r, 2400));
+      const last = out.lastChild;
+      if (last) last.querySelectorAll('.caret').forEach(c => c.remove());
+      for (let i = 0; i < lines.length; i++) {
+        const text = lines[i];
+        const isRec = /^recommendation:/i.test(text);
+        const span = document.createElement('span');
+        span.className = 'line' + (isRec ? ' recommendation' : '');
+        out.appendChild(span);
+        for (let c = 0; c < text.length; c++) {
+          span.textContent += text[c];
+          await new Promise(r => setTimeout(r, 18));
         }
-        el.innerHTML = data.opps.map(o => {
-          const amt = o.amount != null
-            ? '$' + Math.round(o.amount / 1000) + 'K'
-            : '—';
-          const stale = o.daysSince != null
-            ? (o.daysSince === 0 ? 'Active Today' : `${o.daysSince}D Stale`)
-            : 'No Activity';
-          return `
-            <div class="opp-item">
-              <div style="min-width:0">
-                <div class="opp-name">${esc(o.name)}</div>
-                <div class="opp-account">${esc(o.account)}</div>
-              </div>
-              <div class="opp-right">
-                <div class="opp-amount">${amt}</div>
-                <div class="opp-stale">${stale}</div>
-              </div>
-            </div>`;
-        }).join('');
-      } catch {
-        el.innerHTML = '<div class="opp-placeholder">Opps Unavailable. Retry Later.</div>';
+        await new Promise(r => setTimeout(r, 70));
       }
+      briefRendered = true;
+    } catch {
+      out.innerHTML = '<span class="line">brief unavailable. retry later.</span>';
     }
+  }
 
-    // ── Slack replies (Admin pane) ────────────────────────────
-    const slackReplies = {};
+  // Pane carousel
+  const PANE_CONFIG = {
+    0: { placeholder: "plan my",          hero: "PLAN TODAY" },
+    1: { placeholder: "give me the",      hero: "LOAD VISIT BRIEF" },
+    2: { placeholder: "dictate a",        hero: "PROCESS\nFIELD NOTE" },
+  };
 
-    function bindSlackInteractions() {
-      document.querySelectorAll('.slack-msg').forEach(msg => {
-        msg.addEventListener('click', e => {
-          if (e.target.closest('.reply-send') || e.target.closest('.reply-input')) return;
-          const id = msg.id.replace('slack-msg-', '');
-          const area = document.getElementById(`reply-area-${id}`);
-          if (!area) return;
-          area.classList.toggle('open');
-          if (area.classList.contains('open')) {
-            area.querySelector('.reply-input').focus();
-          }
-        });
-      });
-    }
+  let currentPane = 0;
+  const panesEl = document.getElementById('panes');
+  const navTabs = document.querySelectorAll('.nav-tab');
+  const chatInput = document.getElementById('chat-input');
+  const heroBtn = document.getElementById('hero-btn');
 
-    function sendReply(id) {
-      const input = document.getElementById(`reply-input-${id}`);
-      const text = (input.value || '').trim();
-      if (!text) return;
-      slackReplies[id] = text;
-      const msg = document.getElementById(`slack-msg-${id}`);
-      msg.classList.add('fading');
-      setTimeout(() => { msg.style.display = 'none'; }, 300);
-    }
-
-    // ── Pane carousel ─────────────────────────────────────────
-    const PANE_CONFIG = {
-      0: {
-        placeholder: "Report on this visit.",
-        chips: ["Log this visit", "Skip this stop", "What's next?"],
-      },
-      1: {
-        placeholder: "Query the agent.",
-        chips: ["Plan my day", "Log my last visit", "Catch me up on Acme Industries"],
-      },
-      2: {
-        placeholder: "Draft reply or follow-up.",
-        chips: ["Reply to Maya", "Follow up tomorrow"],
-      },
-    };
-
-    let currentPane = 1;
-    const panesEl = document.getElementById('panes');
-    const segments = document.querySelectorAll('.page-segment');
-
-    function setActivePane(idx) {
-      currentPane = idx;
-      segments.forEach((s, i) => s.classList.toggle('active', i === idx));
-    }
-
-    function goToPane(idx, smooth = true) {
-      panesEl.scrollTo({
-        left: idx * panesEl.clientWidth,
-        behavior: smooth ? 'smooth' : 'auto',
-      });
-    }
-
-    let scrollTimeout = null;
-    panesEl.addEventListener('scroll', () => {
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        const idx = Math.round(panesEl.scrollLeft / panesEl.clientWidth);
-        if (idx !== currentPane) setActivePane(idx);
-      }, 60);
+  function applyPaneConfig(idx) {
+    const cfg = PANE_CONFIG[idx];
+    chatInput.placeholder = cfg.placeholder;
+    heroBtn.textContent = cfg.hero;
+  }
+  function setActivePane(idx) {
+    currentPane = idx;
+    navTabs.forEach((t, i) => t.classList.toggle('active', i === idx));
+    applyPaneConfig(idx);
+  }
+  function goToPane(idx, smooth = true) {
+    panesEl.scrollTo({
+      left: idx * panesEl.clientWidth,
+      behavior: smooth ? 'smooth' : 'auto',
     });
+  }
 
-    segments.forEach(s => {
-      s.addEventListener('click', () => {
-        const idx = parseInt(s.dataset.pane, 10);
-        goToPane(idx, true);
-      });
-    });
+  let scrollTimeout = null;
+  panesEl.addEventListener('scroll', () => {
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const idx = Math.round(panesEl.scrollLeft / panesEl.clientWidth);
+      if (idx !== currentPane) setActivePane(idx);
+    }, 60);
+  });
+  navTabs.forEach(t => {
+    t.addEventListener('click', () => goToPane(parseInt(t.dataset.pane, 10), true));
+  });
 
-    // ── FAB / chat overlay ────────────────────────────────────
-    const fab = document.getElementById('fab-mic');
-    const overlay = document.getElementById('chat-overlay');
-    const backdrop = document.getElementById('chat-overlay-backdrop');
-    const promptChipsEl = document.getElementById('prompt-chips');
-    const chatInput = document.getElementById('chat-input');
-
-    function renderPromptChips() {
-      const cfg = PANE_CONFIG[currentPane];
-      chatInput.placeholder = cfg.placeholder;
-      promptChipsEl.innerHTML = cfg.chips
-        .map(c => `<button class="chip" data-text="${esc(c)}">${esc(c)}</button>`)
-        .join('');
-      promptChipsEl.querySelectorAll('.chip').forEach(b => {
-        b.addEventListener('click', () => fillChat(b.dataset.text));
-      });
+  // Chat input wiring
+  const chatWrap = document.getElementById('chat-wrap');
+  chatInput.addEventListener('focus', () => {
+    chatWrap.classList.add('focused');
+    setMascot('listening');
+  });
+  chatInput.addEventListener('blur', () => {
+    chatWrap.classList.remove('focused');
+    if (!chatBusy) setMascot('idle');
+  });
+  chatInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submitChat();
     }
+  });
 
-    function openChatOverlay() {
-      renderPromptChips();
-      overlay.classList.add('open');
-      requestAnimationFrame(() => chatInput.focus());
-    }
-
-    function closeChatOverlay() {
-      overlay.classList.remove('open');
-      chatInput.value = '';
-    }
-
-    fab.addEventListener('click', openChatOverlay);
-    backdrop.addEventListener('click', closeChatOverlay);
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && overlay.classList.contains('open')) closeChatOverlay();
-    });
-
-    // ── Chat state ────────────────────────────────────────────
-    let chatHistory = [];
-    let chatBusy = false;
-    let schedulingIndicatorEl = null;
-    let thinkingBubbleEl = null;
-    let currentRunId = null;
-
-    function fillChat(text) {
-      chatInput.value = text;
+  heroBtn.addEventListener('click', () => {
+    if (chatBusy) return;
+    const v = (chatInput.value || '').trim();
+    if (v) { submitChat(); return; }
+    if (currentPane === 0) {
+      chatInput.value = "plan my stops today. keep accounts in rotation. 4:30 pickup at san mateo high school.";
+      submitChat();
+    } else if (currentPane === 1) {
+      if (selectedStop) {
+        chatInput.value = `give me the brief for ${selectedStop.name}`;
+        submitChat();
+      } else {
+        chatInput.focus();
+      }
+    } else if (currentPane === 2) {
       chatInput.focus();
     }
+  });
 
-    function appendRepMessage(text) {
-      const thread = document.getElementById('chat-thread');
-      const el = document.createElement('div');
-      el.className = 'bubble-rep';
-      el.textContent = text;
-      thread.appendChild(el);
-      thread.scrollTop = thread.scrollHeight;
+  // Submit + agent flow
+  let chatHistory = [];
+  let chatBusy = false;
+  let currentRunId = null;
+
+  function setBusy(busy) {
+    chatBusy = busy;
+    chatInput.disabled = busy;
+    heroBtn.disabled = busy;
+    if (busy) setMascot('thinking');
+    else setMascot('idle');
+  }
+
+  function showLedgerProcessing() {
+    const win = document.getElementById('ledger-window');
+    const out = document.getElementById('ledger-out');
+    win.style.display = 'block';
+    out.innerHTML = '';
+    goToPane(2, true);
+    const lines = [
+      "capturing field note...",
+      "matching contact: bob / accounting / brack",
+      "contact matched: bob harris",
+      "opportunity located",
+      "close date set: 06/30",
+      "task created: procurement follow-up",
+      "campaign added: 6/19 giants executive outing",
+      "writeback complete",
+    ];
+    typeIntoTerminal(out, lines, { charDelay: 16, lineDelay: 90 });
+  }
+
+  async function submitChat() {
+    const val = (chatInput.value || '').trim();
+    if (!val || chatBusy) return;
+    setBusy(true);
+    chatInput.value = '';
+
+    const looksLikeFieldNote = currentPane === 2 || /just (talked|met|saw|finished|wrapped|spoke)/i.test(val);
+    if (looksLikeFieldNote) {
+      showLedgerProcessing();
+      flashMascot('confirmed', 1400);
+      setBusy(false);
+      return;
     }
 
-    function appendAgentMessage(text) {
-      const thread = document.getElementById('chat-thread');
-      const el = document.createElement('div');
-      el.className = 'bubble-agent';
-      el.innerHTML = `<span class="bubble-agent-prefix">&#9654; AGENT</span><div>${esc(text)}</div>`;
-      thread.appendChild(el);
-      thread.scrollTop = thread.scrollHeight;
-      return el;
-    }
+    try {
+      const res = await fetch('/api/plan-day', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: val, history: chatHistory }),
+      }).then(r => r.json());
 
-    function showThinkingBubble() {
-      const thread = document.getElementById('chat-thread');
-      const el = document.createElement('div');
-      el.className = 'bubble-agent';
-      el.innerHTML = `
-        <span class="bubble-agent-prefix">&#9654; AGENT</span>
-        <span class="standby">
-          <span class="crt-cursor"></span>
-          <span class="standby-label">Processing. Stand By.</span>
-        </span>
-      `;
-      thread.appendChild(el);
-      thinkingBubbleEl = el;
-      thread.scrollTop = thread.scrollHeight;
-    }
-
-    function replaceThinkingBubble(text) {
-      if (!thinkingBubbleEl) {
-        appendAgentMessage(text);
+      if (!res.ok) {
+        flashMascot('error', 1200);
+        setBusy(false);
         return;
       }
-      thinkingBubbleEl.innerHTML =
-        `<span class="bubble-agent-prefix">&#9654; AGENT</span><div>${esc(text)}</div>`;
-      thinkingBubbleEl = null;
-      const thread = document.getElementById('chat-thread');
-      thread.scrollTop = thread.scrollHeight;
-    }
 
-    function showSchedulingIndicator() {
-      const thread = document.getElementById('chat-thread');
-      const el = document.createElement('div');
-      el.className = 'scheduling-indicator';
-      el.id = 'sched-indicator';
-      el.innerHTML = `
-        <span class="crt-cursor"></span>
-        <span class="standby-label">Sequencing Stops.</span>
-      `;
-      thread.appendChild(el);
-      schedulingIndicatorEl = el;
-      thread.scrollTop = thread.scrollHeight;
-    }
+      chatHistory = res.history || [];
 
-    function removeSchedulingIndicator() {
-      if (schedulingIndicatorEl) {
-        schedulingIndicatorEl.remove();
-        schedulingIndicatorEl = null;
+      if (res.status === 'clarifying') {
+        if (currentPane === 0) {
+          const out = document.getElementById('brief-out');
+          await typeIntoTerminal(out, normalizeBriefLines(res.message), { charDelay: 16, lineDelay: 70 });
+        }
+        setBusy(false);
+        chatInput.focus();
+        return;
       }
-    }
 
-    function setBusy(busy) {
-      chatBusy = busy;
-      chatInput.disabled = busy;
-      document.getElementById('send-btn').disabled = busy;
-    }
-
-    async function submitChat() {
-      const val = (chatInput.value || '').trim();
-      if (!val || chatBusy) return;
-      setBusy(true);
-
-      chatInput.value = '';
-      appendRepMessage(val);
-      showThinkingBubble();
-
-      // Yield a frame so bubbles paint before fetch starts.
-      await new Promise(requestAnimationFrame);
-
-      try {
-        const res = await fetch('/api/plan-day', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: val, history: chatHistory }),
-        }).then(r => r.json());
-
-        if (!res.ok) {
-          replaceThinkingBubble('TRANSMISSION ERROR. RETRY.');
-          setBusy(false);
-          return;
-        }
-
-        chatHistory = res.history || [];
-
-        if (res.status === 'clarifying') {
-          replaceThinkingBubble(res.message);
-          setBusy(false);
-          chatInput.focus();
-          return;
-        }
-
-        if (res.status === 'scheduling') {
-          currentRunId = res.runId || null;
-          replaceThinkingBubble(res.message);
-          showSchedulingIndicator();
-          await pollForAppointments(res.appointmentIds || []);
-
-          // Auto-swipe to Itinerary, close overlay, reset chat for next session.
-          goToPane(0, true);
-          closeChatOverlay();
-          chatHistory = [];
-          document.getElementById('chat-thread').innerHTML = '';
-          setBusy(false);
-        }
-      } catch (err) {
-        replaceThinkingBubble('NETWORK FAULT. SERVER OFFLINE.');
+      if (res.status === 'scheduling') {
+        currentRunId = res.runId || null;
+        goToPane(1, true);
+        flashMascot('confirmed', 1400);
+        chatHistory = [];
         setBusy(false);
       }
+    } catch (err) {
+      flashMascot('error', 1200);
+      setBusy(false);
     }
+  }
 
-    document.getElementById('send-btn').addEventListener('click', submitChat);
-    chatInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        submitChat();
+  // Itinerary — pure SVG schematic, 10 fixed stops
+  const STOPS = [
+    { name: "EMPLOYNET",          addr: "128 BRENTWOOD DR, SOUTH SAN FRANCISCO, CA", time: null,    opp: "DISCOVERY · $0K" },
+    { name: "NORTHWIND SOFTWARE", addr: "1100 STEVENSON CREEK, SAN MATEO, CA",       time: "10:20", opp: "SOFTWARE RENEWAL · $80K" },
+    { name: "UNIVERSAL CONTAINERS",addr:"950 MIDDLEFIELD RD, REDWOOD CITY, CA",       time: "11:05", opp: "OPEN RENEWAL · $62K" },
+    { name: "ISIS TOYOTA",        addr: "201 EL CAMINO REAL, BURLINGAME, CA",         time: "12:30", opp: "LIFT REPLACEMENT · $48K" },
+    { name: "WATT TERRA",         addr: "488 NEWELL RD, PALO ALTO, CA",               time: "13:45", opp: "INITIAL PARTNERSHIP · $5K" },
+    { name: "ACME INDUSTRIES",    addr: "650 MARSH RD, MENLO PARK, CA",               time: "14:30", opp: "FLEET EXPANSION" },
+    { name: "BRACK INDUSTRIES",   addr: "320 INDUSTRIAL WAY, SAN MATEO, CA",          time: "15:15", opp: "PROCUREMENT FOLLOW-UP" },
+    { name: "DELTA FREIGHT",      addr: "75 AIRPORT BLVD, SOUTH SAN FRANCISCO, CA",   time: "15:45", opp: "RENEWAL CHECK-IN" },
+    { name: "PRESIDIO MEDICAL",   addr: "100 LINCOLN BLVD, SAN FRANCISCO, CA",        time: "15:55", opp: "DISCOVERY · $12K" },
+    { name: "HARBOR ANALYTICS",   addr: "500 HARBOR BAY PKWY, ALAMEDA, CA",           time: "16:10", opp: "PILOT EXTENSION" },
+  ];
+
+  const STOP_COORDS = [
+    { x: 50,  y: 60  }, { x: 80,  y: 90  }, { x: 110, y: 75  }, { x: 95,  y: 120 },
+    { x: 130, y: 140 }, { x: 160, y: 125 }, { x: 145, y: 170 }, { x: 110, y: 200 },
+    { x: 80,  y: 225 }, { x: 60,  y: 250 },
+  ];
+
+  let selectedIdx = 0;
+  let selectedStop = STOPS[0];
+
+  function renderStopTargets() {
+    const group = document.getElementById('stop-targets');
+    const ret = document.getElementById('selected-reticle');
+    if (!group || !ret) return;
+    group.innerHTML = '';
+    ret.innerHTML = '';
+
+    STOP_COORDS.forEach((c, i) => {
+      const isSel = i === selectedIdx;
+      const color = isSel ? '#8BE8FF' : '#7CFF8A';
+      const fillC = isSel ? '#8BE8FF' : '#A7F5B2';
+      const num = String(i + 1).padStart(2, '0');
+
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('style', 'cursor:pointer');
+      g.addEventListener('click', () => selectStop(i));
+
+      const outer = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      outer.setAttribute('x', c.x - 7);
+      outer.setAttribute('y', c.y - 7);
+      outer.setAttribute('width', 14);
+      outer.setAttribute('height', 14);
+      outer.setAttribute('fill', 'none');
+      outer.setAttribute('stroke', color);
+      outer.setAttribute('stroke-width', 1);
+      g.appendChild(outer);
+
+      const inner = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      inner.setAttribute('x', c.x - 3);
+      inner.setAttribute('y', c.y - 3);
+      inner.setAttribute('width', 6);
+      inner.setAttribute('height', 6);
+      inner.setAttribute('fill', fillC);
+      inner.setAttribute('opacity', isSel ? '1' : '0.85');
+      g.appendChild(inner);
+
+      const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lbl.setAttribute('x', c.x + 10);
+      lbl.setAttribute('y', c.y + 3);
+      lbl.setAttribute('fill', color);
+      lbl.setAttribute('font-family', 'IBM Plex Mono, monospace');
+      lbl.setAttribute('font-size', '8');
+      lbl.setAttribute('font-weight', '700');
+      lbl.textContent = num;
+      g.appendChild(lbl);
+
+      group.appendChild(g);
+
+      if (isSel) {
+        const cx = c.x, cy = c.y;
+        const reticleG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        reticleG.setAttribute('class', 'reticle');
+        reticleG.setAttribute('stroke', '#8BE8FF');
+        reticleG.setAttribute('stroke-width', '1');
+        reticleG.setAttribute('fill', 'none');
+        const brackets = [
+          `M ${cx - 11} ${cy - 6} L ${cx - 11} ${cy - 11} L ${cx - 6}  ${cy - 11}`,
+          `M ${cx + 6}  ${cy - 11} L ${cx + 11} ${cy - 11} L ${cx + 11} ${cy - 6}`,
+          `M ${cx + 11} ${cy + 6}  L ${cx + 11} ${cy + 11} L ${cx + 6}  ${cy + 11}`,
+          `M ${cx - 6}  ${cy + 11} L ${cx - 11} ${cy + 11} L ${cx - 11} ${cy + 6}`,
+        ];
+        brackets.forEach(d => {
+          const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          p.setAttribute('d', d);
+          reticleG.appendChild(p);
+        });
+        ret.appendChild(reticleG);
       }
     });
+  }
 
-    // ── Polling ───────────────────────────────────────────────
-    async function pollForAppointments(expectedIds) {
-      const INTERVAL = 2500;
-      const TIMEOUT  = 30000;
-      const started  = Date.now();
-
-      while (true) {
-        await new Promise(r => setTimeout(r, INTERVAL));
-
-        let appts = [];
-        try {
-          const url = currentRunId
-            ? `/api/appointments?runId=${encodeURIComponent(currentRunId)}`
-            : '/api/appointments';
-          const data = await fetch(url).then(r => r.json());
-          appts = data.appointments || [];
-        } catch (_) {
-          // network hiccup — keep polling
-        }
-
-        const valid = appts.filter(a => a.Status !== 'Cancelled');
-        const allHaveCoords = valid.length >= expectedIds.length &&
-          valid.every(a =>
-            a.FSL__InternalSLRGeolocation__Latitude__s != null &&
-            a.FSL__InternalSLRGeolocation__Longitude__s != null
-          );
-
-        const timedOut = Date.now() - started > TIMEOUT;
-
-        if (allHaveCoords || timedOut) {
-          removeSchedulingIndicator();
-          populateItinerary(valid);
-          return;
-        }
-      }
+  function renderStopCard() {
+    const a = STOPS[selectedIdx];
+    selectedStop = a;
+    const num = String(selectedIdx + 1).padStart(2, '0');
+    document.getElementById('sc-num').textContent = `STOP ${num}`;
+    document.getElementById('sc-name').textContent = a.name;
+    document.getElementById('sc-addr').textContent = a.addr;
+    const timeEl = document.getElementById('sc-time');
+    if (a.time) {
+      timeEl.textContent = `ARRIVE ${a.time}`;
+      timeEl.style.color = 'var(--phosphor-green)';
+      timeEl.style.textShadow = '0 0 4px rgba(124,255,138,0.5)';
+    } else {
+      timeEl.textContent = 'TIME PENDING';
+      timeEl.style.color = 'var(--signal-yellow)';
+      timeEl.style.textShadow = '0 0 4px rgba(242,199,68,0.45)';
     }
+    document.getElementById('sc-opp').textContent = a.opp;
 
-    // ── Itinerary (map mounts once on page load) ──────────────
-    const REP_COORD = [-122.4194, 37.7749];
-    let map = null;
-    let mapReady = false;
-    let pendingItinerary = null;
-    let apptMarkers = [];
+    const finalStop = [...STOPS].reverse().find(s => s.time);
+    document.getElementById('rs-final').textContent = finalStop ? finalStop.time : '—';
+    document.getElementById('rs-stops').textContent = STOPS.length;
+  }
 
-    function initRouteMap() {
-      fetch('/api/config').then(r => r.json()).then(cfg => {
-        mapboxgl.accessToken = cfg.mapboxToken;
-        map = new mapboxgl.Map({
-          container: 'map',
-          style: 'mapbox://styles/mapbox/dark-v11',
-          center: REP_COORD,
-          zoom: 11,
-        });
+  function selectStop(idx) {
+    selectedIdx = Math.max(0, Math.min(idx, STOPS.length - 1));
+    renderStopTargets();
+    renderStopCard();
+  }
 
-        map.on('load', () => {
-          // Custom Y2K cyan rep marker with chrome ring + soft pulse
-          const repEl = document.createElement('div');
-          repEl.className = 'rep-marker';
-          new mapboxgl.Marker({ element: repEl })
-            .setLngLat(REP_COORD)
-            .setPopup(new mapboxgl.Popup({ offset: 12 }).setText('You'))
-            .addTo(map);
-          mapReady = true;
-          if (pendingItinerary) {
-            const a = pendingItinerary;
-            pendingItinerary = null;
-            populateItinerary(a);
-          }
-        });
-      });
-    }
+  document.getElementById('sc-next-btn').addEventListener('click', () => {
+    selectStop((selectedIdx + 1) % STOPS.length);
+  });
+  document.getElementById('sc-brief-btn').addEventListener('click', () => {
+    chatInput.value = `give me the brief for ${selectedStop.name}`;
+    submitChat();
+  });
 
-    function updateTerminalReadout(appts) {
-      const readout = document.getElementById('terminal-readout');
-      const stopEl  = document.getElementById('terminal-stop');
-      const etaEl   = document.getElementById('terminal-eta');
+  // Init
+  async function init() {
+    const initialPane = (() => {
+      const p = parseInt(new URLSearchParams(location.search).get('pane') || '0', 10);
+      return Number.isFinite(p) && p >= 0 && p <= 2 ? p : 0;
+    })();
+    requestAnimationFrame(() => {
+      panesEl.scrollLeft = initialPane * panesEl.clientWidth;
+      setActivePane(initialPane);
+    });
 
-      if (!appts.length) {
-        readout.classList.remove('active');
-        return;
-      }
+    renderStopTargets();
+    renderStopCard();
+    await checkHealth();
+    fetchDailyBrief();
+  }
 
-      const next = appts.find(a => a.Status === 'Scheduled') || appts[0];
-      const name = (next.Account && next.Account.Name) || next.Subject || '—';
-      stopEl.textContent = name.toUpperCase();
-
-      if (next.SchedStartTime) {
-        const mins = Math.max(0, Math.round((new Date(next.SchedStartTime) - Date.now()) / 60000));
-        etaEl.textContent = mins > 0 ? `${mins} MIN` : 'NOW';
-      } else {
-        etaEl.textContent = '—';
-      }
-
-      readout.classList.add('active');
-    }
-
-    function populateItinerary(appts) {
-      if (!mapReady) {
-        pendingItinerary = appts;
-        return;
-      }
-
-      document.getElementById('route-empty').classList.add('hidden');
-      document.getElementById('sheet').style.display = 'flex';
-
-      apptMarkers.forEach(m => m.remove());
-      apptMarkers = [];
-
-      const bounds = new mapboxgl.LngLatBounds(REP_COORD, REP_COORD);
-
-      appts.forEach((appt, i) => {
-        const lat = appt.FSL__InternalSLRGeolocation__Latitude__s;
-        const lng = appt.FSL__InternalSLRGeolocation__Longitude__s;
-
-        let coord;
-        if (lat != null && lng != null) {
-          coord = [lng, lat];
-        } else {
-          coord = [REP_COORD[0] + (i * 0.002), REP_COORD[1] + (i * 0.002)];
-        }
-
-        const label = (appt.Account && appt.Account.Name) || appt.Subject || `Stop ${i + 1}`;
-        const tooltip = (lat == null || lng == null) ? '...' : label;
-
-        // Chunky bitmap-style stop marker: outlined phosphor square + stop number
-        const stopEl = document.createElement('div');
-        stopEl.className = 'stop-marker';
-        stopEl.textContent = String(i + 1);
-
-        const m = new mapboxgl.Marker({ element: stopEl })
-          .setLngLat(coord)
-          .setPopup(new mapboxgl.Popup({ offset: 12 }).setText(tooltip))
-          .addTo(map);
-        apptMarkers.push(m);
-        bounds.extend(coord);
-      });
-
-      map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
-      renderAppointmentList(appts);
-      updateTerminalReadout(appts);
-    }
-
-    function renderAppointmentList(appointments) {
-      const kpiStops = document.getElementById('kpi-stops');
-      const apptList = document.getElementById('appt-list');
-      const count = appointments.length;
-
-      kpiStops.innerHTML = `<em>${count}</em> Stop${count !== 1 ? 's' : ''}`;
-
-      if (!count) {
-        apptList.innerHTML = '<div class="loading-msg">No Stops Scheduled.</div>';
-        return;
-      }
-
-      const nextAppt = appointments.find(a => a.Status === 'Scheduled') || appointments[0];
-      if (nextAppt) {
-        const nextEl = document.getElementById('kpi-next');
-        nextEl.innerHTML = `<em>${esc((nextAppt.Account && nextAppt.Account.Name) || nextAppt.Subject || '—')}</em>`;
-      }
-
-      apptList.innerHTML = appointments.map((a, i) => {
-        const statusKey   = (a.Status || '').toLowerCase().replace(/\s+/g, '-');
-        const accountName = esc((a.Account && a.Account.Name) || a.Subject || '—');
-        const addr = [a.Street, a.City, a.State].filter(Boolean).map(esc).join(', ') || 'Address pending';
-        const timeStr = a.SchedStartTime
-          ? new Date(a.SchedStartTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-          : '—';
-        const statusLabel = esc((a.Status || 'New').toUpperCase());
-        return `
-          <div class="appt-card status-${statusKey || 'none'}">
-            <div class="appt-top-row">
-              <div>
-                <span class="appt-num">${i + 1}</span>
-                <span class="appt-id">${esc(a.AppointmentNumber || '')}</span>
-              </div>
-              <span class="appt-status status-${statusKey || 'none'}">${statusLabel}</span>
-            </div>
-            <div class="appt-subject">${accountName}</div>
-            <div class="appt-meta">${addr}</div>
-            <div class="appt-meta">${timeStr}</div>
-          </div>`;
-      }).join('');
-    }
-
-    // ── Init ──────────────────────────────────────────────────
-    async function init() {
-      // Lock initial scroll position to Home (center pane).
-      requestAnimationFrame(() => {
-        panesEl.scrollLeft = panesEl.clientWidth;
-        setActivePane(1);
-      });
-
-      bindSlackInteractions();
-
-      await checkHealth();
-      fetchDailyBrief();
-      fetchOpenOpps();
-      initRouteMap();
-
-      // Pre-populate Itinerary if there are existing SAs from today.
-      try {
-        const data = await fetch('/api/appointments').then(r => r.json());
-        const appts = (data.appointments || []).filter(a => a.Status !== 'Cancelled');
-        if (appts.length) populateItinerary(appts);
-      } catch (_) {}
-    }
-
-    init();
-  </script>
+  init();
+</script>
 </body>
 </html>
