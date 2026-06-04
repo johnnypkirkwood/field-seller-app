@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const Anthropic = require('@anthropic-ai/sdk');
 const { sfQuery } = require('./sf');
 const mcp = require('./lib/mcp-client');
+const slack = require('./lib/slack-client');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -109,8 +110,16 @@ app.get('/api/config', (req, res) => {
   res.json({ mapboxToken: process.env.MAPBOX_TOKEN || '' });
 });
 
-// Daily brief — calls Claude, caches 1 hour
+// Daily brief — calls Claude, caches 1 hour. Cache is reset on
+// every process start (let-bound init) so a server restart busts
+// any stale brief from a previous prompt revision.
 let briefCache = null;
+briefCache = null; // explicit bust on startup — M9.8 prompt change
+
+// Slack messages handled this session (replied or reacted to).
+// Filtered out of /api/slack/intake so they don't reappear after the
+// user dispatches an action. In-memory only — server restart clears it.
+const handledSlackMessages = new Set();
 
 app.post('/api/daily-brief', async (req, res) => {
   const now = Date.now();
@@ -119,31 +128,46 @@ app.post('/api/daily-brief', async (req, res) => {
   }
 
   const mockContext = `
-Rep: Johnny Kirkwood, field sales, Bay Area territory BAY-04.
+Rep: Johnny Kirkwood, field sales, Bay Area.
 Open accounts:
+  - Verde — Cloud Security Monitoring Upgrade, $85K, closes Sept 30, 18 days quiet. Bob Hodges (CEO) is the primary contact.
   - Northwind Software — $80K, closes Jul 15, 5 days quiet
   - Isis Toyota — $48K, closes Sept 30, 12 days quiet
-  - Universal Containers — $62K, open renewal, 18 days quiet
-  - Brack Industries — procurement follow-up, Bob in Accounting, Giants outing signal
+  - Universal Containers — $62K, open renewal, 14 days quiet
   - Watt Terra — $5K, initial project partnership, no activity
-Constraint: 4:30 PM kid pickup at San Mateo High School. Final visit 16:10, 9-min buffer.
 Today: Tuesday
   `.trim();
 
   try {
     const msg = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 240,
-      system: `You produce terminal-style daily briefs for a 1980s workstation UI.
+      max_tokens: 150,
+      system: `You are a field sales assistant giving a morning account snapshot. Be EXTREMELY concise. Format:
 
-Output format — NOTHING else:
-- Exactly 6 to 7 lines.
-- Each line ≤ 60 characters, lowercase, fragment (no full sentences).
-- No bullets, no dashes, no quotes, no emoji, no leading "> ".
-- Lines 1–5 should describe the field state (priority accounts, time pressure, route fit, constraints).
-- Final line MUST start with "recommendation: " followed by an imperative phrase.
+- One short greeting line (under 10 words)
+- One line per account (5 accounts max)
+- Each account line: account name — dollar amount, key signal, one action phrase
+- One closing line with the day's constraint if relevant
 
-Style: clipped, scanning, machine-cadence. Think system log, not assistant copy. No greetings, no warmth, no "you've got this".`,
+HARD RULES:
+- Each account line must be UNDER 80 characters
+- Total output must be UNDER 600 characters
+- Use fragments, not full sentences
+- No paragraphs. No multi-sentence explanations.
+- Lowercase is fine. Be terse.
+- Do NOT give routing advice or sequencing recommendations.
+- Do NOT mention pickups, San Mateo, drive times, or schedules.
+- Do NOT reference past social events, relationship warmth, prior interactions, or campaign membership tied to social events. The brief is pre-visit account state only.
+
+Example output format:
+here's your snapshot, johnny.
+northwind — $80k closing jul 15, 5 days quiet. touch today.
+verde — bob hodges, $85k, 18 days dark. needs a visit.
+universal containers — $62k renewal drifting. nudge this week.
+isis toyota — $48k, sept 30 runway. monitor only.
+watt terra — $5k, no momentum. skip this cycle.
+
+That's it. Six lines. Done.`,
       messages: [{ role: 'user', content: mockContext }],
     });
 
@@ -851,6 +875,307 @@ app.post('/api/log-visit/commit', async (req, res) => {
   }
 
   res.json({ ok: errors.length === 0, executed, ...(errors.length ? { errors } : {}) });
+});
+
+
+// ── Slack intake + reply ─────────────────────────────────
+// Reads channel mentions + DMs as the user, posts replies as the user.
+// Token comes from SLACK_USER_TOKEN; channel allowlist from SLACK_CHANNELS.
+
+app.get('/api/slack/intake', async (req, res) => {
+  if (!process.env.SLACK_USER_TOKEN) {
+    return res.json({ ok: false, error: 'SLACK_USER_TOKEN not configured', messages: [] });
+  }
+  try {
+    const c = slack.getClient();
+    const channelIds = slack.getConfiguredChannelIds();
+    const myId = process.env.SLACK_USER_ID;
+    const messages = [];
+
+    // 1. Channel messages mentioning the user — by configured channel ID
+    for (const channelId of channelIds) {
+      try {
+        const info = await slack.resolveChannelInfo(channelId);
+        const history = await c.conversations.history({
+          channel: channelId,
+          limit: 30,
+        });
+        for (const msg of (history.messages || [])) {
+          if (msg.user === myId) continue;
+          if (!msg.text || !msg.text.includes(`<@${myId}>`)) continue;
+          const senderName = await slack.resolveUser(msg.user);
+          messages.push({
+            id: msg.ts,
+            type: 'channel',
+            channelId,
+            channelName: info.name,
+            user: senderName,
+            userId: msg.user,
+            text: msg.text.replace(`<@${myId}>`, '@you'),
+            ts: msg.ts,
+            threadTs: msg.thread_ts || msg.ts,
+          });
+        }
+      } catch (err) {
+        console.error(`slack channel ${channelId} read error:`, err.message);
+        // Continue with other channels
+      }
+    }
+
+    // 2. DMs sent TO the user (most recent message in each IM, if not from us)
+    let ims;
+    try {
+      ims = await c.conversations.list({ types: 'im', limit: 50 });
+    } catch (err) {
+      ims = { channels: [] };
+    }
+    for (const im of (ims.channels || [])) {
+      let history;
+      try {
+        history = await c.conversations.history({ channel: im.id, limit: 5 });
+      } catch (err) {
+        continue;
+      }
+      const last = history.messages && history.messages[0];
+      if (!last) continue;
+      if (last.user === myId) continue;
+      if (!last.text) continue;
+      const senderName = await slack.resolveUser(last.user);
+      messages.push({
+        id: last.ts,
+        type: 'dm',
+        channelId: im.id,
+        channelName: 'DIRECT',
+        user: senderName,
+        userId: last.user,
+        text: last.text,
+        ts: last.ts,
+        threadTs: last.thread_ts || last.ts,
+      });
+    }
+
+    // Drop messages we've already handled this session (replied/reacted)
+    const filtered = messages.filter(m =>
+      !handledSlackMessages.has(m.ts) && !handledSlackMessages.has(m.threadTs)
+    );
+    filtered.sort((a, b) => parseFloat(b.ts) - parseFloat(a.ts));
+    res.json({ ok: true, messages: filtered.slice(0, 10) });
+  } catch (err) {
+    console.error('slack intake error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post('/api/slack/reply', async (req, res) => {
+  const { channelId, text, threadTs } = req.body || {};
+  if (!channelId || !text) {
+    return res.status(400).json({ ok: false, error: 'channelId and text required' });
+  }
+  if (!process.env.SLACK_USER_TOKEN) {
+    return res.status(500).json({ ok: false, error: 'SLACK_USER_TOKEN not configured' });
+  }
+  try {
+    const c = slack.getClient();
+    const result = await c.chat.postMessage({
+      channel: channelId,
+      text,
+      thread_ts: threadTs,
+      as_user: true,
+    });
+    res.json({ ok: true, ts: result.ts });
+  } catch (err) {
+    console.error('slack reply error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Add a reaction to a Slack message — utility, also used by the agent loop.
+app.post('/api/slack/react', async (req, res) => {
+  const { channelId, messageTs, emoji } = req.body || {};
+  if (!channelId || !messageTs || !emoji) {
+    return res.status(400).json({ ok: false, error: 'channelId, messageTs, and emoji required' });
+  }
+  if (!process.env.SLACK_USER_TOKEN) {
+    return res.status(500).json({ ok: false, error: 'SLACK_USER_TOKEN not configured' });
+  }
+  try {
+    const c = slack.getClient();
+    await c.reactions.add({
+      channel: channelId,
+      timestamp: messageTs,
+      name: emoji,
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('slack react error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Slack agent — natural-language instruction → Claude tool loop →
+// chat.postMessage / reactions.add against the configured channels.
+app.post('/api/slack/action', async (req, res) => {
+  const { message } = req.body || {};
+  if (!message) return res.status(400).json({ ok: false, error: 'message required' });
+  if (!process.env.SLACK_USER_TOKEN) {
+    return res.status(500).json({ ok: false, error: 'SLACK_USER_TOKEN not configured' });
+  }
+
+  // Fetch pending messages across configured channels for context.
+  const pendingMessages = [];
+  try {
+    const c = slack.getClient();
+    const channelIds = slack.getConfiguredChannelIds();
+    const myId = process.env.SLACK_USER_ID;
+    for (const channelId of channelIds) {
+      try {
+        const info = await slack.resolveChannelInfo(channelId);
+        const history = await c.conversations.history({ channel: channelId, limit: 20 });
+        for (const msg of (history.messages || [])) {
+          if (msg.user === myId) continue;
+          if (!msg.text) continue;
+          const senderName = await slack.resolveUser(msg.user);
+          pendingMessages.push({
+            user: senderName,
+            channelId,
+            channelName: info.name,
+            text: msg.text.replace(new RegExp(`<@${myId}>`, 'g'), '@you'),
+            ts: msg.ts,
+            threadTs: msg.thread_ts || msg.ts,
+          });
+        }
+      } catch (e) { /* skip unreadable channel */ }
+    }
+  } catch (e) { /* fall through with empty context */ }
+
+  const SLACK_TOOLS = [
+    {
+      name: 'reply_to_message',
+      description: 'Reply to a specific person\'s Slack message in their thread.',
+      input_schema: {
+        type: 'object',
+        required: ['channelId', 'threadTs', 'text'],
+        properties: {
+          channelId: { type: 'string', description: 'The channel ID where the message lives' },
+          threadTs: { type: 'string', description: 'The thread timestamp to reply to' },
+          text:     { type: 'string', description: 'The reply text to send' },
+        },
+      },
+    },
+    {
+      name: 'react_to_message',
+      description: 'Add an emoji reaction to a specific Slack message (to acknowledge it without a reply).',
+      input_schema: {
+        type: 'object',
+        required: ['channelId', 'messageTs', 'emoji'],
+        properties: {
+          channelId: { type: 'string', description: 'The channel ID' },
+          messageTs: { type: 'string', description: 'The exact message timestamp to react to' },
+          emoji:     { type: 'string', description: 'Emoji name without colons: thumbsup, eyes, white_check_mark, etc.' },
+        },
+      },
+    },
+    {
+      name: 'submit_results',
+      description: 'Call this LAST after all Slack actions are complete. Provide a brief one-line summary.',
+      input_schema: {
+        type: 'object',
+        required: ['summary'],
+        properties: { summary: { type: 'string' } },
+      },
+    },
+  ];
+
+  const pendingForPrompt = pendingMessages
+    .map(m => `- From "${m.user}" in #${m.channelName}: "${m.text}" [channelId=${m.channelId}, ts=${m.ts}, threadTs=${m.threadTs}]`)
+    .join('\n');
+
+  const systemPrompt = `You are a field sales AI assistant helping Johnny manage Slack communications.
+
+Here are the pending messages in Johnny's Slack channels:
+${pendingForPrompt}
+
+When Johnny gives you an instruction about responding to messages:
+1. Match people by first name (Ralph = Ralph Clark, Alan = Alan Reed, etc.)
+2. Use reply_to_message for text replies — write exactly what Johnny asked for, keep it brief and natural
+3. Use react_to_message for acknowledgments (thumbsup, eyes, white_check_mark)
+4. "let them know I've seen it" or "acknowledge" = thumbsup reaction
+5. Call submit_results LAST with a one-line summary of actions taken
+
+Be concise. Don't add fluff to replies. Write what the rep told you to write, nothing more.`;
+
+  const messages = [{ role: 'user', content: message }];
+
+  try {
+    let summary = null;
+
+    while (true) {
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
+        system: systemPrompt,
+        tools: SLACK_TOOLS,
+        messages,
+      });
+
+      if (response.stop_reason === 'end_turn') {
+        const text = (response.content.find(c => c.type === 'text') || {}).text || '';
+        return res.json({ ok: true, summary: summary || text || 'Done.' });
+      }
+
+      if (response.stop_reason === 'tool_use') {
+        messages.push({ role: 'assistant', content: response.content });
+        const toolResults = [];
+
+        for (const tu of response.content.filter(c => c.type === 'tool_use')) {
+          let result;
+          try {
+            if (tu.name === 'reply_to_message') {
+              const c = slack.getClient();
+              const r = await c.chat.postMessage({
+                channel: tu.input.channelId,
+                text: tu.input.text,
+                thread_ts: tu.input.threadTs,
+                as_user: true,
+              });
+              if (tu.input.threadTs) handledSlackMessages.add(tu.input.threadTs);
+              result = { ok: true, ts: r.ts };
+            } else if (tu.name === 'react_to_message') {
+              const c = slack.getClient();
+              await c.reactions.add({
+                channel: tu.input.channelId,
+                timestamp: tu.input.messageTs,
+                name: tu.input.emoji,
+              });
+              if (tu.input.messageTs) handledSlackMessages.add(tu.input.messageTs);
+              result = { ok: true };
+            } else if (tu.name === 'submit_results') {
+              summary = tu.input.summary;
+              result = { ok: true };
+            } else {
+              result = { error: `Unknown tool: ${tu.name}` };
+            }
+          } catch (toolErr) {
+            result = { error: toolErr.message };
+          }
+          toolResults.push({
+            type: 'tool_result',
+            tool_use_id: tu.id,
+            content: JSON.stringify(result),
+          });
+        }
+
+        messages.push({ role: 'user', content: toolResults });
+
+        if (summary) {
+          return res.json({ ok: true, summary });
+        }
+      }
+    }
+  } catch (err) {
+    console.error('slack action error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 

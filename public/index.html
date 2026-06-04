@@ -277,6 +277,164 @@
     .window-body.tight { padding: 10px 10px 10px; }
     .window-body.flush { padding: 0; }
 
+    /* Collapsed window — title bar only, body hidden */
+    .window.collapsed > .window-body { display: none; }
+
+    /* Brief title bar collapse toggle */
+    .title-collapse {
+      flex-shrink: 0;
+      width: 18px;
+      height: 16px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      color: var(--ui-light);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+    }
+    .title-collapse:hover  { background: rgba(255, 255, 255, 0.32); }
+    .title-collapse:active { background: rgba(255, 255, 255, 0.45); }
+    .title-collapse:focus  { outline: none; }
+
+    /* Hide footer mini Astro on Home until the launch fires */
+    body.home-hero-idle .mascot-mini-wrap { visibility: hidden; }
+
+    /* Chat thread (Home only, shown after launch) */
+    .chat-thread {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+      margin: 8px 0 12px;
+      padding: 4px 2px;
+      font-family: var(--font-mono);
+    }
+    .chat-thread.active { display: flex; }
+    .chat-thread::-webkit-scrollbar { width: 3px; }
+    .chat-thread::-webkit-scrollbar-thumb { background: var(--screen-border); }
+    .bubble-rep {
+      align-self: flex-end;
+      max-width: 85%;
+      padding: 6px 10px;
+      background: var(--screen-bg);
+      border: 1px solid var(--phosphor-green);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.5;
+      letter-spacing: 0.02em;
+    }
+    .bubble-agent {
+      align-self: flex-start;
+      max-width: 95%;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--phosphor-green);
+      letter-spacing: 0.02em;
+      text-shadow:
+        0 0 1px var(--phosphor-green),
+        0 0 4px rgba(124, 255, 138, 0.4);
+    }
+    .bubble-agent::before {
+      content: "> ";
+      color: var(--text-dim);
+      text-shadow: none;
+    }
+
+    /* Stop card — hidden until route is built */
+    .stop-window { display: none; }
+    .stop-window.active { display: block; }
+
+    /* Empty-state line shown on Itinerary while accountsOnly */
+    .route-empty-line {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      padding: 12px 4px;
+    }
+    .route-empty-line.hidden { display: none; }
+
+    /* Build-route inline terminal log */
+    .route-build-log {
+      background: var(--screen-bg);
+      border: 1px solid var(--phosphor-green);
+      border-top: none;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+    }
+
+    .stats-card .rs-warn {
+      color: var(--signal-yellow);
+      text-shadow: 0 0 4px rgba(242, 199, 68, 0.5);
+    }
+
+    /* Field Signals — performance metric rows */
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      padding: 6px 0;
+      font-family: var(--font-mono);
+    }
+    .metric-row + .metric-row {
+      border-top: 1px dashed rgba(141, 177, 139, 0.55);
+    }
+    .metric-label {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .metric-value {
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .metric-value.ok {
+      color: var(--phosphor-green);
+      text-shadow: 0 0 4px rgba(124, 255, 138, 0.45);
+    }
+    .metric-value.warn {
+      color: var(--signal-yellow);
+      text-shadow: 0 0 4px rgba(242, 199, 68, 0.45);
+    }
+    .metric-value.urgent {
+      color: var(--alert-red);
+      text-shadow: 0 0 4px rgba(255, 122, 107, 0.45);
+    }
+
+    /* Retro 80s Slack icon — four colored bars in a hash mark */
+    .retro-slack-icon {
+      position: relative;
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-right: 6px;
+      vertical-align: middle;
+      image-rendering: pixelated;
+    }
+    .retro-slack-icon .bar {
+      position: absolute;
+      display: block;
+    }
+    .retro-slack-icon .bar-h-top    { top: 4px;  left: 0; width: 18px; height: 2px; background: #FF69B4; box-shadow: 0 0 3px rgba(255, 105, 180, 0.7); }
+    .retro-slack-icon .bar-h-bot    { top: 12px; left: 0; width: 18px; height: 2px; background: #F2C744; box-shadow: 0 0 3px rgba(242, 199, 68, 0.7); }
+    .retro-slack-icon .bar-v-left   { top: 0; left: 4px;  width: 2px; height: 18px; background: #8BE8FF; box-shadow: 0 0 3px rgba(139, 232, 255, 0.7); }
+    .retro-slack-icon .bar-v-right  { top: 0; left: 12px; width: 2px; height: 18px; background: #7CFF8A; box-shadow: 0 0 3px rgba(124, 255, 138, 0.7); }
+
     /* Stats card — no title, just a green-bordered box */
     .stats-card {
       background: var(--screen-bg);
@@ -350,16 +508,7 @@
       padding: 18px 0 14px;
       min-height: 230px;
     }
-    .hero-mascot {
-      position: relative;
-      z-index: 2;
-      width: 192px;
-      height: 200px;
-      filter:
-        drop-shadow(0 0 6px rgba(91, 168, 229, 0.35))
-        drop-shadow(0 0 2px rgba(124, 255, 138, 0.3));
-    }
-    .hero-mascot svg { display: block; width: 100%; height: 100%; }
+    /* Sprite-driven Astro — see also .astro-sprite below */
 
     /* Sparkles around hero */
     .sparkle {
@@ -401,7 +550,79 @@
       margin-bottom: 12px;
       overflow: hidden;
     }
-    .map-frame svg { display: block; width: 100%; height: 100%; }
+    #map {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #map .mapboxgl-canvas { outline: none; }
+
+    /* Account dot — accountsOnly state */
+    .account-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--phosphor-green-soft);
+      box-shadow: 0 0 6px rgba(124, 255, 138, 0.6);
+      border: 1px solid rgba(124, 255, 138, 0.85);
+    }
+
+    /* Stop target — routeBuilt state */
+    .stop-target {
+      position: relative;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+    }
+    .stop-target .t-outer {
+      position: absolute;
+      inset: 4px;
+      border: 1px solid var(--phosphor-green);
+      box-shadow: 0 0 5px rgba(124, 255, 138, 0.55);
+    }
+    .stop-target .t-inner {
+      position: absolute;
+      left: 8px; top: 8px;
+      width: 6px; height: 6px;
+      background: var(--phosphor-green-soft);
+      box-shadow: 0 0 4px rgba(124, 255, 138, 0.65);
+    }
+    .stop-target .t-num {
+      position: absolute;
+      left: 26px;
+      top: 4px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--phosphor-green);
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 4px rgba(124, 255, 138, 0.55);
+      white-space: nowrap;
+    }
+    .stop-target.selected .t-outer {
+      border-color: var(--select-cyan);
+      box-shadow: 0 0 6px rgba(139, 232, 255, 0.6);
+    }
+    .stop-target.selected .t-inner {
+      background: var(--select-cyan);
+      box-shadow: 0 0 5px rgba(139, 232, 255, 0.7);
+    }
+    .stop-target.selected .t-num {
+      color: var(--select-cyan);
+      text-shadow: 0 0 4px rgba(139, 232, 255, 0.6);
+    }
+    .stop-target .t-reticle {
+      position: absolute;
+      inset: -4px;
+      pointer-events: none;
+      animation: ret-pulse 2.4s ease-in-out infinite;
+      background:
+        linear-gradient(to right, var(--select-cyan) 0 6px, transparent 6px 24px, var(--select-cyan) 24px 30px) top    / 100% 1px no-repeat,
+        linear-gradient(to right, var(--select-cyan) 0 6px, transparent 6px 24px, var(--select-cyan) 24px 30px) bottom / 100% 1px no-repeat,
+        linear-gradient(to bottom, var(--select-cyan) 0 6px, transparent 6px 24px, var(--select-cyan) 24px 30px) left   / 1px 100% no-repeat,
+        linear-gradient(to bottom, var(--select-cyan) 0 6px, transparent 6px 24px, var(--select-cyan) 24px 30px) right  / 1px 100% no-repeat;
+    }
     .compass {
       position: absolute;
       top: 8px;
@@ -542,6 +763,112 @@
       text-shadow: 0 0 4px rgba(255, 122, 107, 0.4);
     }
 
+    /* Dynamic Slack intake — populated by /api/slack/intake */
+    .comm-intake-status {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      padding: 6px 0;
+    }
+    .comm-intake-status.error  { color: var(--alert-red); text-shadow: 0 0 4px rgba(255, 122, 107, 0.4); }
+    .comm-intake-status.empty  { color: var(--text-muted); }
+
+    .slack-message {
+      padding: 10px 0;
+      font-family: var(--font-mono);
+    }
+    .slack-message + .slack-message {
+      border-top: 1px dashed rgba(141, 177, 139, 0.4);
+      margin-top: 8px;
+    }
+    .slack-header {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .slack-header .slack-prefix {
+      color: var(--disclosure-blue);
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-shadow: 0 0 4px rgba(91, 168, 229, 0.55);
+    }
+    .slack-header .slack-from {
+      color: var(--text-main);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .slack-header .slack-source { color: var(--text-dim); }
+    .slack-text {
+      font-size: 12px;
+      color: var(--text-main);
+      letter-spacing: 0.02em;
+      line-height: 1.5;
+      margin: 4px 0 6px;
+      white-space: pre-wrap;
+    }
+    .slack-classification {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border: 1px solid var(--text-dim);
+      color: var(--text-dim);
+    }
+    .slack-classification.urgent {
+      border-color: var(--alert-red);
+      color: var(--alert-red);
+      text-shadow: 0 0 4px rgba(255, 122, 107, 0.4);
+    }
+    .slack-reply-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .slack-reply-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--screen-bg);
+      border: 1px solid var(--phosphor-green);
+      box-shadow: inset 0 0 0 1px rgba(124, 255, 138, 0.4);
+      color: var(--phosphor-green);
+      caret-color: var(--phosphor-green);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      padding: 6px 8px;
+      outline: none;
+      text-shadow: 0 0 3px rgba(124, 255, 138, 0.4);
+    }
+    .slack-reply-input:focus {
+      border-color: var(--select-cyan);
+      box-shadow: inset 0 0 0 1px var(--select-cyan);
+    }
+    .slack-reply-input::placeholder {
+      color: var(--text-dim);
+      opacity: 0.7;
+    }
+    .slack-reply-send {
+      flex-shrink: 0;
+      background: transparent;
+      border: 1px solid var(--phosphor-green);
+      color: var(--phosphor-green);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      padding: 0 12px;
+      cursor: pointer;
+      text-shadow: 0 0 3px rgba(124, 255, 138, 0.5);
+      transition: background 0.15s;
+    }
+    .slack-reply-send:hover    { background: rgba(124, 255, 138, 0.12); }
+    .slack-reply-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
     /* Bottom control strip */
     .control-panel {
       flex-shrink: 0;
@@ -552,11 +879,11 @@
 
     .assistant-zone {
       position: relative;
-      height: 70px;
+      min-height: 70px;
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 0 12px;
+      padding: 8px 12px;
     }
 
     .mascot-mini-wrap {
@@ -568,12 +895,20 @@
       justify-content: center;
       position: relative;
     }
-    .mascot-mini {
-      width: 38px;
-      height: 42px;
-      filter: drop-shadow(0 0 3px rgba(91, 168, 229, 0.3));
+    /* (Old .mascot-mini SVG slot replaced by .astro-sprite.astro-mini) */
+
+    /* Mini Astro container — collapsed in idle, expands during processing */
+    .astro-mini-container {
+      width: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: width 300ms ease, opacity 300ms ease;
+      flex-shrink: 0;
     }
-    .mascot-mini svg { display: block; width: 100%; height: 100%; }
+    .astro-mini-container[data-visible="true"] {
+      width: 52px;   /* 46px sprite + 6px gap to chat input */
+      opacity: 1;
+    }
 
     .mascot-status {
       position: absolute;
@@ -590,18 +925,22 @@
     .mascot-status.ok   { color: var(--phosphor-green); text-shadow: 0 0 6px var(--phosphor-green); }
     .mascot-status.err  { color: var(--alert-red);     text-shadow: 0 0 6px var(--alert-red); }
 
-    /* Command-prompt input — double bordered green */
+    /* Command-prompt input — auto-growing textarea with inline ">" prefix.
+       The wrapper keeps its CRT double-border; the textarea grows from
+       1 line up to ~4 lines, then internally scrolls. Native caret. */
     .chat-input-wrap {
       flex: 1;
       min-width: 0;
       position: relative;
-      height: 42px;
+      min-height: 42px;
       background: var(--screen-bg);
       border: 1px solid var(--phosphor-green);
       box-shadow: inset 0 0 0 2px var(--screen-bg), inset 0 0 0 3px rgba(124, 255, 138, 0.6);
+      transition: all 300ms ease;
       display: flex;
-      align-items: center;
-      padding: 0 8px 0 10px;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 8px 10px;
     }
     .chat-input-wrap.focused {
       border-color: var(--select-cyan);
@@ -613,42 +952,82 @@
       font-family: var(--font-mono);
       font-size: 13px;
       font-weight: 700;
-      margin-right: 6px;
+      line-height: 1.5;
+      padding-top: 0;
       text-shadow: 0 0 4px rgba(124, 255, 138, 0.6);
     }
     .chat-input {
       flex: 1;
       min-width: 0;
-      height: 100%;
-      padding: 0;
       background: transparent;
       border: none;
+      outline: none;
       color: var(--phosphor-green);
+      caret-color: var(--phosphor-green);
       font-family: var(--font-mono);
       font-size: 13px;
       letter-spacing: 0.02em;
+      line-height: 1.5;
+      padding: 0;
+      margin: 0;
       resize: none;
-      line-height: 42px;
-      caret-color: transparent;
+      overflow-y: auto;
+      min-height: calc(1em * 1.5);
+      max-height: calc(4em * 1.5);
       text-shadow: 0 0 4px rgba(124, 255, 138, 0.4);
     }
     .chat-input::placeholder {
-      color: var(--phosphor-green);
-      opacity: 0.6;
+      color: var(--text-dim);
+      opacity: 0.7;
       letter-spacing: 0.04em;
       text-transform: lowercase;
     }
     .chat-input:focus { outline: none; }
     .chat-input:disabled { opacity: 0.6; cursor: not-allowed; }
+    /* Hide the textarea's own scrollbar while still allowing internal scroll past 4 lines */
+    .chat-input::-webkit-scrollbar { width: 3px; }
+    .chat-input::-webkit-scrollbar-thumb { background: var(--screen-border); }
 
-    .chat-cursor {
+    /* Mic button — chunky retro mic glyph, lives inside the input wrap */
+    .mic-button {
       flex-shrink: 0;
-      width: 9px;
-      height: 16px;
-      background: var(--phosphor-green);
-      box-shadow: 0 0 5px var(--phosphor-green);
-      margin-left: 4px;
-      animation: blink 1s steps(2) infinite;
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: 1px solid var(--phosphor-green);
+      color: var(--phosphor-green);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-radius: 0;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      align-self: flex-start;
+    }
+    .mic-button:hover  { background: rgba(124, 255, 138, 0.12); }
+    .mic-button:focus  { outline: none; box-shadow: 0 0 0 1px var(--phosphor-green-soft); }
+    .mic-button[data-state="listening"] {
+      border-color: var(--alert-red);
+      color: var(--alert-red);
+      animation: mic-pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes mic-pulse {
+      0%, 100% { box-shadow: 0 0 4px rgba(255, 122, 107, 0.4); }
+      50%      {
+        box-shadow:
+          0 0 14px rgba(255, 122, 107, 0.85),
+          0 0 24px rgba(255, 122, 107, 0.4);
+      }
+    }
+    /* Subtle attention pulse when input is empty + idle */
+    .chat-input-wrap:not(:focus-within)
+      .mic-button[data-state="idle"]:not(:hover) {
+      animation: mic-glow-hint 3s ease-in-out infinite;
+    }
+    @keyframes mic-glow-hint {
+      0%, 70%, 100% { box-shadow: 0 0 0 rgba(124, 255, 138, 0); }
+      85%           { box-shadow: 0 0 8px rgba(124, 255, 138, 0.4); }
     }
 
     /* Hero key — double-bordered, label can wrap to 2 lines */
@@ -729,35 +1108,74 @@
     }
     .nav-tab:focus { outline: none; }
 
-    /* Pixel mascot — astronaut SVG sprite */
-    .astro {
-      shape-rendering: crispEdges;
+    /* Sprite-sheet Astro — background-position animation driven by JS */
+    .astro-sprite {
       image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      background-repeat: no-repeat;
+      display: block;
+      filter:
+        drop-shadow(0 0 2px rgba(216, 243, 211, 0.6))
+        drop-shadow(0 0 8px rgba(124, 255, 138, 0.35));
     }
-    @keyframes blink-eyes {
-      0%, 92%, 100% { opacity: 1; }
-      94%, 96%      { opacity: 0; }
+    .astro-sprite.astro-hero {
+      width: 230px;
+      height: 230px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
     }
-    .astro .eye { animation: blink-eyes 4s infinite; }
-    @keyframes wave {
-      0%, 100% { transform: rotate(-3deg); }
-      50%      { transform: rotate(3deg); }
+    .astro-sprite.astro-mini {
+      width: 46px;
+      height: 46px;
     }
-    .astro .wave-arm {
-      transform-origin: 12px 9px;
-      transform-box: fill-box;
-      animation: wave 2.4s ease-in-out infinite;
+
+    /* Hero Astro launch — translate up + fade out, ~700ms */
+    @keyframes astro-launch {
+      0%   { transform: translateY(0);     opacity: 1; }
+      18%  { transform: translateY(8px);   opacity: 1; }
+      100% { transform: translateY(-400px); opacity: 0; }
     }
-    @keyframes flash-green {
-      0%, 100% { fill: var(--ui-light); }
-      50%      { fill: var(--terminal-green); }
+    .astro-sprite.astro-hero.launching {
+      animation: astro-launch 700ms ease-in forwards;
     }
-    @keyframes flash-red {
-      0%, 100% { fill: var(--ui-light); }
-      50%      { fill: var(--alert-red); }
+
+    /* Pixel exhaust dots under Astro's feet during launch */
+    .exhaust-dots {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 16%;
+      width: 64px;
+      height: 24px;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 1;
     }
-    .astro.confirmed .suit-fill { animation: flash-green 0.24s 2; }
-    .astro.error     .suit-fill { animation: flash-red   0.24s 2; }
+    .hero-wrap.launching .exhaust-dots {
+      animation: exhaust-fade 700ms ease-out forwards;
+    }
+    @keyframes exhaust-fade {
+      0%   { opacity: 0; }
+      20%  { opacity: 1; }
+      80%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .exhaust-dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: var(--phosphor-green);
+      box-shadow: 0 0 6px var(--phosphor-green);
+    }
+    .exhaust-dot.d1 { left: 18px; top: 0;  animation: exhaust-flicker 110ms steps(2) infinite; }
+    .exhaust-dot.d2 { left: 30px; top: 6px; animation: exhaust-flicker 90ms  steps(2) infinite; }
+    .exhaust-dot.d3 { left: 42px; top: 0;  animation: exhaust-flicker 130ms steps(2) infinite; }
+    .exhaust-dot.d4 { left: 24px; top: 14px; animation: exhaust-flicker 100ms steps(2) infinite; }
+    @keyframes exhaust-flicker {
+      0%, 100% { opacity: 1;   transform: scaleY(1); }
+      50%      { opacity: 0.5; transform: scaleY(0.6); }
+    }
 
     /* Selected stop reticle pulse */
     @keyframes ret-pulse {
@@ -768,73 +1186,6 @@
   </style>
 </head>
 <body>
-
-<!-- Shared pixel astronaut sprite — used at both sizes via <use> -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="astro-sprite" viewBox="0 0 16 18">
-    <!-- Antennae -->
-    <rect x="6"  y="0" width="1" height="1" fill="#5BA8E5"/>
-    <rect x="9"  y="0" width="1" height="1" fill="#5BA8E5"/>
-    <rect x="6"  y="1" width="1" height="1" fill="#E8E1D1"/>
-    <rect x="9"  y="1" width="1" height="1" fill="#E8E1D1"/>
-
-    <!-- Helmet outline (cream) -->
-    <rect x="4"  y="2" width="8" height="1" fill="#E8E1D1" class="suit-fill"/>
-    <rect x="3"  y="3" width="1" height="3" fill="#E8E1D1" class="suit-fill"/>
-    <rect x="12" y="3" width="1" height="3" fill="#E8E1D1" class="suit-fill"/>
-    <rect x="4"  y="6" width="8" height="1" fill="#E8E1D1" class="suit-fill"/>
-
-    <!-- Helmet visor interior (blue) -->
-    <rect x="4"  y="3" width="8" height="3" fill="#5BA8E5"/>
-    <rect x="5"  y="3" width="1" height="1" fill="#A5D8FF"/>
-
-    <!-- Eyes -->
-    <rect x="6"  y="4" width="1" height="2" fill="#0b0f0a" class="eye"/>
-    <rect x="9"  y="4" width="1" height="2" fill="#0b0f0a" class="eye"/>
-
-    <!-- Neck collar -->
-    <rect x="6"  y="7" width="4" height="1" fill="#E8E1D1" class="suit-fill"/>
-
-    <!-- Torso -->
-    <rect x="5"  y="8"  width="6" height="1" fill="#E8E1D1" class="suit-fill"/>
-    <rect x="4"  y="9"  width="7" height="1" fill="#E8E1D1" class="suit-fill"/>
-    <rect x="4"  y="10" width="7" height="1" fill="#E8E1D1" class="suit-fill"/>
-    <rect x="4"  y="11" width="7" height="1" fill="#E8E1D1" class="suit-fill"/>
-    <rect x="5"  y="12" width="5" height="1" fill="#E8E1D1" class="suit-fill"/>
-
-    <!-- Heart cluster on chest (blue plus) -->
-    <rect x="7"  y="9"  width="1" height="1" fill="#5BA8E5"/>
-    <rect x="8"  y="9"  width="1" height="1" fill="#5BA8E5"/>
-    <rect x="6"  y="10" width="1" height="1" fill="#5BA8E5"/>
-    <rect x="9"  y="10" width="1" height="1" fill="#5BA8E5"/>
-    <rect x="7"  y="11" width="2" height="1" fill="#5BA8E5"/>
-
-    <!-- Left arm -->
-    <rect x="3"  y="9"  width="1" height="3" fill="#E8E1D1" class="suit-fill"/>
-
-    <!-- Right arm raised in a wave -->
-    <g class="wave-arm">
-      <rect x="11" y="8" width="1" height="1" fill="#E8E1D1" class="suit-fill"/>
-      <rect x="12" y="6" width="1" height="2" fill="#E8E1D1" class="suit-fill"/>
-      <rect x="13" y="4" width="1" height="2" fill="#E8E1D1" class="suit-fill"/>
-      <rect x="13" y="3" width="1" height="1" fill="#E8E1D1" class="suit-fill"/>
-    </g>
-
-    <!-- Belt accent -->
-    <rect x="5"  y="11" width="1" height="1" fill="#5BA8E5"/>
-    <rect x="9"  y="11" width="1" height="1" fill="#5BA8E5"/>
-
-    <!-- Legs -->
-    <rect x="5"  y="13" width="2" height="2" fill="#E8E1D1" class="suit-fill"/>
-    <rect x="8"  y="13" width="2" height="2" fill="#E8E1D1" class="suit-fill"/>
-
-    <!-- Boots -->
-    <rect x="4"  y="15" width="3" height="1" fill="#E8E1D1" class="suit-fill"/>
-    <rect x="8"  y="15" width="3" height="1" fill="#E8E1D1" class="suit-fill"/>
-    <rect x="4"  y="16" width="3" height="1" fill="#5BA8E5"/>
-    <rect x="8"  y="16" width="3" height="1" fill="#5BA8E5"/>
-  </symbol>
-</svg>
 
 <div class="phone">
   <div class="island"></div>
@@ -884,27 +1235,30 @@
               <span class="sparkle sm tw"  style="top: 88%; left: 30%;  opacity: 0.6;">+</span>
               <span class="sparkle lg tw2" style="top: 38%; left: 46%;  opacity: 0.25;">+</span>
 
-              <div class="hero-mascot">
-                <svg class="astro idle" id="astro-hero" viewBox="0 0 16 18">
-                  <use href="#astro-sprite"/>
-                </svg>
+              <div class="astro-sprite astro-hero" id="astro-hero" data-state="idle"></div>
+              <div class="exhaust-dots" id="exhaust-dots" aria-hidden="true">
+                <span class="exhaust-dot d1"></span>
+                <span class="exhaust-dot d2"></span>
+                <span class="exhaust-dot d3"></span>
+                <span class="exhaust-dot d4"></span>
               </div>
             </div>
 
-            <div class="window">
-              <div class="window-title">
+            <div class="window brief-window collapsed" id="brief-window">
+              <div class="window-title brief-title">
                 <span class="title-text">DAILY BRIEF</span>
                 <span class="title-rule">─────────────────────</span>
-                <span class="title-controls">─ □ x</span>
+                <button class="title-collapse" id="brief-collapse-btn" type="button" aria-label="Toggle brief">+</button>
               </div>
               <div class="window-body">
                 <div class="terminal-out" id="brief-out">
-                  <span class="line">initializing secure channel...</span>
-                  <span class="line">pulling priority signals...</span>
-                  <span class="line">generating brief...<span class="caret"></span></span>
+                  <span class="line">awaiting command<span class="caret"></span></span>
                 </div>
               </div>
             </div>
+
+            <!-- Chat thread — visible only after Astro launch -->
+            <div class="chat-thread" id="chat-thread"></div>
 
           </div>
         </div>
@@ -913,64 +1267,32 @@
         <div class="pane" id="pane-itinerary">
           <div class="itin-scroll">
 
-            <div class="stats-card">
+            <div class="stats-card" id="route-summary">
               <div class="row1">
-                <span><span id="rs-stops">10</span> STOPS</span>
-                <span>FINAL: <span id="rs-final">—</span></span>
-                <span>BUFFER: <span id="rs-buffer">09 MIN</span></span>
+                <span class="rs-warn">ROUTE NOT BUILT</span>
               </div>
-              <div>SAN MATEO CONSTRAINT APPLIED</div>
+              <div><span id="rs-accounts">10</span> ACCOUNTS AVAILABLE</div>
+            </div>
+
+            <!-- Build-route terminal log — shown during buildingRoute -->
+            <div class="route-build-log" id="route-build-log" style="display:none;">
+              <div class="terminal-out" id="route-build-out"></div>
             </div>
 
             <div class="map-frame" id="map-frame">
-              <svg viewBox="0 0 360 280" preserveAspectRatio="none" aria-hidden="true">
-                <defs>
-                  <pattern id="grid40" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M40 0 L0 0 L0 40" fill="none" stroke="#5BA8E5" stroke-width="0.5" opacity="0.18"/>
-                  </pattern>
-                </defs>
-                <rect width="360" height="280" fill="url(#grid40)"/>
-
-                <!-- Land mass outline -->
-                <polygon
-                  points="
-                    20,30 60,18 100,28 140,20 168,40 178,60 170,90 192,100
-                    220,118 235,140 240,170 232,200 210,222 180,240 150,250 122,254
-                    100,260 78,256 58,242 40,220 28,196 22,170 18,140 22,108 18,80 14,60 18,42
-                  "
-                  fill="rgba(124, 255, 138, 0.04)"
-                  stroke="#7CFF8A"
-                  stroke-width="1"
-                  stroke-opacity="0.85"
-                />
-                <polyline
-                  points="150,80 160,98 180,108 200,128 212,150 210,178 192,200 170,210 150,206 138,190 132,170 138,150 144,128 150,108"
-                  fill="none"
-                  stroke="#7CFF8A"
-                  stroke-width="0.8"
-                  stroke-opacity="0.6"
-                />
-
-                <!-- Dashed route polyline -->
-                <polyline id="route-line"
-                  points="50,60 80,90 110,75 95,120 130,140 160,125 145,170 110,200 80,225 60,250"
-                  fill="none"
-                  stroke="#A7F5B2"
-                  stroke-width="1"
-                  stroke-dasharray="3 3"
-                  opacity="0.95"
-                />
-
-                <g id="stop-targets" font-family="IBM Plex Mono, monospace" font-size="8" fill="#7CFF8A"></g>
-                <g id="selected-reticle"></g>
-              </svg>
+              <div id="map"></div>
               <div class="compass">
                 <span>N</span>
                 <span class="arrow">▲</span>
               </div>
             </div>
 
-            <div class="window">
+            <!-- Empty-state line shown while accountsOnly -->
+            <div class="route-empty-line" id="route-empty-line">
+              &gt; no route generated. ask field agent to build one.<span class="caret"></span>
+            </div>
+
+            <div class="window stop-window" id="stop-card">
               <div class="window-title">
                 <span class="title-text" id="sc-num">STOP 01</span>
                 <span class="title-rule">─────────────────────</span>
@@ -1014,37 +1336,44 @@
                 <span class="title-controls">─ □ x</span>
               </div>
               <div class="window-body">
-                <div class="record-row">
-                  <div class="record-name">NORTHWIND SOFTWARE</div>
-                  <div class="record-meta">close-date pressure · <span class="yellow">5 days quiet</span></div>
+                <div class="metric-row">
+                  <span class="metric-label">VISITS THIS MONTH</span>
+                  <span class="metric-value ok">38 / 44 TARGET</span>
                 </div>
-                <div class="record-row">
-                  <div class="record-name">ISIS TOYOTA</div>
-                  <div class="record-meta">account rotation gap · <span class="urgent">12 days quiet</span></div>
+                <div class="metric-row">
+                  <span class="metric-label">PIPELINE TOUCHED</span>
+                  <span class="metric-value ok">$248K THIS WEEK</span>
                 </div>
-                <div class="record-row">
-                  <div class="record-name">BRACK INDUSTRIES</div>
-                  <div class="record-meta">campaign intent detected · confirm bob</div>
+                <div class="metric-row">
+                  <span class="metric-label">ACCOUNTS DARK 14+ DAYS</span>
+                  <span class="metric-value warn">6 ACCOUNTS</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">CLOSED WON THIS MONTH</span>
+                  <span class="metric-value ok">$92K</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">FOLLOW-UP SLA</span>
+                  <span class="metric-value ok">82%</span>
                 </div>
               </div>
             </div>
 
             <div class="window">
               <div class="window-title">
+                <span class="retro-slack-icon" aria-hidden="true">
+                  <span class="bar bar-h-top"></span>
+                  <span class="bar bar-h-bot"></span>
+                  <span class="bar bar-v-left"></span>
+                  <span class="bar bar-v-right"></span>
+                </span>
                 <span class="title-text">COMM INTAKE</span>
                 <span class="title-rule">─────────────────────</span>
                 <span class="title-controls">─ □ x</span>
               </div>
               <div class="window-body">
-                <div class="record-row" id="slack-msg-0">
-                  <div class="record-source">Maya R. / #deals</div>
-                  <div class="record-quote"><span class="tx-prefix">TX</span>"Any update on Acme Industries?"</div>
-                  <span class="record-tag">Response Required</span>
-                </div>
-                <div class="record-row" id="slack-msg-1">
-                  <div class="record-source">Devon T. / Direct</div>
-                  <div class="record-quote"><span class="tx-prefix">TX</span>"Can you sign the vendor NDA before EOD?"</div>
-                  <span class="record-tag">Admin Blocker</span>
+                <div class="comm-intake-list" id="comm-intake-list">
+                  <div class="comm-intake-status">&gt; standby...</div>
                 </div>
               </div>
             </div>
@@ -1079,24 +1408,34 @@
     <!-- ── Control panel (mascot + input + hero) ────────── -->
     <div class="control-panel">
       <div class="assistant-zone">
-        <div class="mascot-mini-wrap">
-          <div class="mascot-mini">
-            <svg class="astro idle" id="astro-mini" viewBox="0 0 16 18">
-              <use href="#astro-sprite"/>
-            </svg>
+        <div class="astro-mini-container" id="astro-mini-container" data-visible="false">
+          <div class="mascot-mini-wrap">
+            <div class="astro-sprite astro-mini" id="astro-mini" data-state="idle"></div>
+            <span class="mascot-status" id="mascot-status"></span>
           </div>
-          <span class="mascot-status" id="mascot-status"></span>
         </div>
 
         <div class="chat-input-wrap" id="chat-wrap">
           <span class="prompt-prefix" aria-hidden="true">&gt;</span>
-          <textarea class="chat-input" id="chat-input" rows="1" placeholder="plan my"
+          <textarea class="chat-input" id="chat-input" rows="1" placeholder="ask or tap the mic"
                     autocomplete="off" autocorrect="off" autocapitalize="off"
-                    spellcheck="false" name="field-agent-cmd"></textarea>
-          <div class="chat-cursor" aria-hidden="true"></div>
+                    spellcheck="false" name="field-agent-cmd"
+                    aria-label="Ask Field Agent"></textarea>
+          <button class="mic-button" id="mic-btn" type="button"
+                  aria-label="Dictate" data-state="idle">
+            <svg viewBox="0 0 18 18" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <rect x="6" y="2" width="6" height="9" rx="2"/>
+              <rect x="4" y="9" width="10" height="1.5"/>
+              <rect x="3" y="9" width="1.5" height="3"/>
+              <rect x="13.5" y="9" width="1.5" height="3"/>
+              <rect x="3" y="11" width="12" height="1.5"/>
+              <rect x="8.25" y="13" width="1.5" height="3"/>
+              <rect x="6" y="15.5" width="6" height="1.5"/>
+            </svg>
+          </button>
         </div>
 
-        <button class="hero-key" id="hero-btn" type="button">PLAN TODAY</button>
+        <button class="hero-key" id="hero-btn" type="button">RUN COMMAND</button>
       </div>
 
       <div class="bottom-nav">
@@ -1111,6 +1450,7 @@
   </div><!-- .screen -->
 </div><!-- .phone -->
 
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
 <script>
   function esc(s) {
     return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1127,28 +1467,73 @@
   updateClock();
   setInterval(updateClock, 1000);
 
-  // Mascot state — toggles classes on both hero + mini SVG
-  const heroAstro = document.getElementById('astro-hero');
-  const miniAstro = document.getElementById('astro-mini');
-  const mascotStatus = document.getElementById('mascot-status');
+  // ── Sprite-sheet Astro ─────────────────────────────────────
+  // Each state maps to a sheet + grid + fps. animateAstro() walks
+  // background-position frame-by-frame on a setInterval.
+  const ASTRO_SPRITES = {
+    idle:      { url: 'astro-wave.png',     cols: 5, rows: 5, fps: 8  },
+    listening: { url: 'astro-talking.png',  cols: 5, rows: 5, fps: 12 },
+    thinking:  { url: 'astro-talking.png',  cols: 5, rows: 5, fps: 8  },
+    success:   { url: 'astro-thumbsup.png', cols: 8, rows: 8, fps: 10 },
+    error:     { url: 'astro-wave.png',     cols: 5, rows: 5, fps: 4  },
+  };
 
-  function setMascot(state) {
-    [heroAstro, miniAstro].forEach(el => {
-      el.classList.remove('idle', 'listening', 'thinking', 'confirmed', 'error');
-      el.classList.add(state);
-    });
+  function animateAstro(el, state) {
+    const cfg = ASTRO_SPRITES[state] || ASTRO_SPRITES.idle;
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    if (!w || !h) {
+      // Element not laid out yet — defer to next frame
+      requestAnimationFrame(() => animateAstro(el, state));
+      return;
+    }
+
+    el.style.backgroundImage = `url(${cfg.url})`;
+    el.style.backgroundSize = `${w * cfg.cols}px ${h * cfg.rows}px`;
+    el.dataset.state = state;
+
+    if (el._astroInterval) clearInterval(el._astroInterval);
+
+    let frame = 0;
+    const total = cfg.cols * cfg.rows;
+    const step = () => {
+      const col = frame % cfg.cols;
+      const row = Math.floor(frame / cfg.cols);
+      el.style.backgroundPosition = `-${col * w}px -${row * h}px`;
+      frame = (frame + 1) % total;
+    };
+    step(); // paint frame 0 immediately
+    el._astroInterval = setInterval(step, 1000 / cfg.fps);
   }
+
+  window.setAstroState = function(state) {
+    document.querySelectorAll('.astro-sprite').forEach(el => {
+      animateAstro(el, state);
+    });
+  };
+
+  // Boot all sprites to idle as soon as their layout is known
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.astro-sprite').forEach(el => {
+      animateAstro(el, 'idle');
+    });
+  });
+
+  // Corner ✓/✗ badge — kept from the old mascot for clarity on success/error
+  const mascotStatus = document.getElementById('mascot-status');
   function showMascotStatus(kind) {
+    if (!mascotStatus) return;
     mascotStatus.classList.remove('ok', 'err', 'show');
     mascotStatus.textContent = kind === 'ok' ? '✓' : '✗';
     mascotStatus.classList.add(kind === 'ok' ? 'ok' : 'err', 'show');
     setTimeout(() => mascotStatus.classList.remove('show'), 900);
   }
-  function flashMascot(state, ms = 700) {
-    setMascot(state);
-    if (state === 'confirmed') showMascotStatus('ok');
-    if (state === 'error')     showMascotStatus('err');
-    setTimeout(() => setMascot('idle'), ms);
+
+  function flashAstroState(state, idleAfterMs) {
+    setAstroState(state);
+    if (state === 'success') showMascotStatus('ok');
+    if (state === 'error')   showMascotStatus('err');
+    setTimeout(() => setAstroState('idle'), idleAfterMs);
   }
 
   // Health check
@@ -1201,24 +1586,45 @@
     return trimmed.split(/(?<=[\.!?])\s+/).map(s => s.replace(/[\.!?]+$/, '').toLowerCase().trim()).filter(Boolean).slice(0, 7);
   }
 
-  let briefRendered = false;
+  // ── Daily brief — collapsed by default, expands on demand ──
+  let briefCollapsed = true;
+  let briefHasContent = false;
+
+  function setBriefCollapsed(collapsed) {
+    briefCollapsed = collapsed;
+    const win = document.getElementById('brief-window');
+    const btn = document.getElementById('brief-collapse-btn');
+    if (!win) return;
+    win.classList.toggle('collapsed', collapsed);
+    if (btn) btn.textContent = collapsed ? '+' : '−';
+  }
+
   async function fetchDailyBrief() {
+    // Expand the panel and stream the brief into it
+    setBriefCollapsed(false);
     const out = document.getElementById('brief-out');
+    out.innerHTML = '';
+
+    const boot = [
+      "initializing secure channel...",
+      "pulling priority signals...",
+      "generating brief...",
+    ];
+
     try {
-      const data = await fetch('/api/daily-brief', { method: 'POST' }).then(r => r.json());
-      const lines = normalizeBriefLines(data.brief);
-      const boot = [
-        "initializing secure channel...",
-        "pulling priority signals...",
-        "generating brief...",
-      ];
-      if (briefRendered) {
+      // If we already have content cached, render it instantly
+      if (briefHasContent) {
+        const data = await fetch('/api/daily-brief', { method: 'POST' }).then(r => r.json());
+        const lines = normalizeBriefLines(data.brief);
         await typeIntoTerminal(out, [...boot, ...lines], { instant: true });
         return;
       }
-      // Boot lines, then pause on the caret, then stream the real brief
+
+      // Stream the boot lines, hold on the caret, then stream the brief
       await typeIntoTerminal(out, boot, { charDelay: 22, lineDelay: 90, withCursor: true });
-      await new Promise(r => setTimeout(r, 2400));
+      const data = await fetch('/api/daily-brief', { method: 'POST' }).then(r => r.json());
+      const lines = normalizeBriefLines(data.brief);
+
       const last = out.lastChild;
       if (last) last.querySelectorAll('.caret').forEach(c => c.remove());
       for (let i = 0; i < lines.length; i++) {
@@ -1233,7 +1639,7 @@
         }
         await new Promise(r => setTimeout(r, 70));
       }
-      briefRendered = true;
+      briefHasContent = true;
     } catch {
       out.innerHTML = '<span class="line">brief unavailable. retry later.</span>';
     }
@@ -1241,9 +1647,9 @@
 
   // Pane carousel
   const PANE_CONFIG = {
-    0: { placeholder: "plan my",          hero: "PLAN TODAY" },
-    1: { placeholder: "give me the",      hero: "LOAD VISIT BRIEF" },
-    2: { placeholder: "dictate a",        hero: "PROCESS\nFIELD NOTE" },
+    0: { placeholder: "ask or tap",  hero: "RUN COMMAND" },
+    1: { placeholder: "ask or tap",  hero: "RUN COMMAND" },
+    2: { placeholder: "ask or tap",  hero: "RUN COMMAND" },
   };
 
   let currentPane = 0;
@@ -1261,6 +1667,7 @@
     currentPane = idx;
     navTabs.forEach((t, i) => t.classList.toggle('active', i === idx));
     applyPaneConfig(idx);
+    onPaneChange(idx);
   }
   function goToPane(idx, smooth = true) {
     panesEl.scrollTo({
@@ -1281,21 +1688,224 @@
     t.addEventListener('click', () => goToPane(parseInt(t.dataset.pane, 10), true));
   });
 
+  // ── Slack COMM INTAKE — fetch + render + reply ───────────
+  const ADMIN_PANE_INDEX = 2;
+  let commPollInterval = null;
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function classifySlackMessage(text) {
+    return /\?\s*$/.test(text.trim()) || /\?/.test(text)
+      ? 'RESPONSE REQUIRED'
+      : 'INFO';
+  }
+
+  function renderSlackMessage(m) {
+    const channelLabel = m.type === 'dm' ? 'DIRECT' : `#${m.channelName}`;
+    const classification = classifySlackMessage(m.text || '');
+    const tagClass = classification === 'RESPONSE REQUIRED' ? 'urgent' : '';
+    return `
+      <div class="slack-message" data-channel="${escapeHtml(m.channelId)}"
+           data-thread="${escapeHtml(m.threadTs)}">
+        <div class="slack-header">
+          <span class="slack-prefix">TX</span>
+          <span class="slack-from">${escapeHtml(m.user)}</span>
+          <span class="slack-source">/ ${escapeHtml(channelLabel)}</span>
+        </div>
+        <div class="slack-text">"${escapeHtml(m.text)}"</div>
+        <div class="slack-classification ${tagClass}">${escapeHtml(classification)}</div>
+        <div class="slack-reply-row">
+          <input type="text" class="slack-reply-input"
+                 placeholder="reply as you..." />
+          <button class="slack-reply-send" type="button">SEND</button>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadCommIntake() {
+    const list = document.getElementById('comm-intake-list');
+    if (!list) return;
+    // Don't blow away existing messages on a refresh poll — only show
+    // the loading state on first paint.
+    if (!list.querySelector('.slack-message')) {
+      list.innerHTML = '<div class="comm-intake-status">&gt; connecting to slack...</div>';
+    }
+    try {
+      const res = await fetch('/api/slack/intake').then(r => r.json());
+      if (!res.ok) {
+        list.innerHTML = `<div class="comm-intake-status error">&gt; ${escapeHtml(res.error || 'slack offline')}</div>`;
+        return;
+      }
+      if (!res.messages || !res.messages.length) {
+        list.innerHTML = '<div class="comm-intake-status empty">&gt; no pending messages</div>';
+        return;
+      }
+      list.innerHTML = res.messages.map(renderSlackMessage).join('');
+      attachSlackReplyHandlers();
+    } catch (err) {
+      list.innerHTML = '<div class="comm-intake-status error">&gt; slack offline</div>';
+    }
+  }
+
+  function attachSlackReplyHandlers() {
+    document.querySelectorAll('.slack-reply-send').forEach(btn => {
+      if (btn._wired) return;
+      btn._wired = true;
+      btn.addEventListener('click', async () => {
+        const card = btn.closest('.slack-message');
+        const input = card.querySelector('.slack-reply-input');
+        const text = (input.value || '').trim();
+        if (!text) return;
+        const channelId = card.dataset.channel;
+        const threadTs = card.dataset.thread;
+        const originalLabel = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '...';
+        try {
+          const res = await fetch('/api/slack/reply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ channelId, text, threadTs }),
+          }).then(r => r.json());
+          if (res.ok) {
+            btn.textContent = 'SENT';
+            input.value = '';
+            setTimeout(() => loadCommIntake(), 1000);
+          } else {
+            btn.textContent = 'FAIL';
+            console.error('slack reply failed:', res.error);
+            setTimeout(() => { btn.disabled = false; btn.textContent = originalLabel; }, 2000);
+          }
+        } catch (err) {
+          btn.textContent = 'FAIL';
+          console.error('slack reply network error:', err);
+          setTimeout(() => { btn.disabled = false; btn.textContent = originalLabel; }, 2000);
+        }
+      });
+    });
+  }
+
+  function onPaneChange(activeIndex) {
+    if (activeIndex === ADMIN_PANE_INDEX) {
+      loadCommIntake();
+      if (!commPollInterval) {
+        commPollInterval = setInterval(loadCommIntake, 30000);
+      }
+    } else {
+      if (commPollInterval) {
+        clearInterval(commPollInterval);
+        commPollInterval = null;
+      }
+    }
+  }
+
   // Chat input wiring
   const chatWrap = document.getElementById('chat-wrap');
   chatInput.addEventListener('focus', () => {
     chatWrap.classList.add('focused');
-    setMascot('listening');
+    setAstroState('listening');
   });
   chatInput.addEventListener('blur', () => {
     chatWrap.classList.remove('focused');
-    if (!chatBusy) setMascot('idle');
+    if (!chatBusy) setAstroState('idle');
   });
   chatInput.addEventListener('keydown', e => {
+    // Enter submits, Shift+Enter inserts a newline (default behavior)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       submitChat();
     }
+  });
+
+  // Auto-grow: textarea resizes to fit content up to its max-height,
+  // then the textarea internally scrolls.
+  function autoGrowChatInput() {
+    chatInput.style.height = 'auto';
+    chatInput.style.height = chatInput.scrollHeight + 'px';
+  }
+  chatInput.addEventListener('input', autoGrowChatInput);
+
+  // ── Web Speech API — voice input ─────────────────────────
+  const SpeechRecognition = window.SpeechRecognition
+                         || window.webkitSpeechRecognition;
+
+  let recognition = null;
+  let isListening = false;
+  let originalPlaceholder = chatInput.placeholder;
+  let placeholderTimer = null;
+
+  function setMicState(state) {
+    document.querySelectorAll('.mic-button').forEach(b => {
+      b.dataset.state = state;
+    });
+  }
+
+  function flashPlaceholder(msg, ms) {
+    if (placeholderTimer) { clearTimeout(placeholderTimer); placeholderTimer = null; }
+    originalPlaceholder = chatInput.placeholder;
+    chatInput.placeholder = msg;
+    placeholderTimer = setTimeout(() => {
+      // Restore whatever the active pane's placeholder is now
+      applyPaneConfig(currentPane);
+      placeholderTimer = null;
+    }, ms);
+  }
+
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map(r => r[0].transcript)
+        .join('');
+      chatInput.value = transcript;
+      // Trigger the auto-grow listener so the wrapper expands as text streams in
+      chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      setMicState('idle');
+      if (window.setAstroState) setAstroState('idle');
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      isListening = false;
+      setMicState('idle');
+      if (window.setAstroState) setAstroState('idle');
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        flashPlaceholder('mic blocked — check browser permissions', 4000);
+      }
+    };
+  }
+
+  document.querySelectorAll('.mic-button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!recognition) {
+        flashPlaceholder('voice input not supported — try chrome, safari, edge', 4000);
+        return;
+      }
+      if (isListening) {
+        recognition.stop();
+        return;
+      }
+      try {
+        recognition.start();
+        isListening = true;
+        setMicState('listening');
+        if (window.setAstroState) setAstroState('listening');
+      } catch (err) {
+        console.error('Could not start recognition:', err);
+      }
+    });
   });
 
   heroBtn.addEventListener('click', () => {
@@ -1303,10 +1913,11 @@
     const v = (chatInput.value || '').trim();
     if (v) { submitChat(); return; }
     if (currentPane === 0) {
-      chatInput.value = "plan my stops today. keep accounts in rotation. 4:30 pickup at san mateo high school.";
-      submitChat();
+      chatInput.focus();
     } else if (currentPane === 1) {
-      if (selectedStop) {
+      if (itineraryState === 'accountsOnly') {
+        buildRoute();
+      } else if (selectedStop) {
         chatInput.value = `give me the brief for ${selectedStop.name}`;
         submitChat();
       } else {
@@ -1317,17 +1928,100 @@
     }
   });
 
+  // ── Home Astro state machine + chat thread ────────────────
+  let homeAstroState = 'hero';  // 'hero' | 'launching' | 'footerActive'
+
+  function appendThreadMessage(role, text) {
+    const thread = document.getElementById('chat-thread');
+    const el = document.createElement('div');
+    el.className = role === 'rep' ? 'bubble-rep' : 'bubble-agent';
+    thread.appendChild(el);
+    if (role === 'rep') {
+      el.textContent = text;
+    } else {
+      // Type-on for agent messages
+      let i = 0;
+      const stepDelay = 18;
+      const step = () => {
+        if (i <= text.length) {
+          el.textContent = text.slice(0, i);
+          i++;
+          setTimeout(step, stepDelay);
+        }
+      };
+      step();
+    }
+    thread.scrollTop = thread.scrollHeight;
+    return el;
+  }
+
+  async function homeFirstAction() {
+    // Caller is expected to have already appended the rep message
+    // synchronously (so it renders BEFORE the launch animation).
+    if (homeAstroState !== 'hero') return;
+    homeAstroState = 'launching';
+
+    const heroWrap = document.querySelector('.hero-wrap');
+    const heroAstro = document.getElementById('astro-hero');
+    const thread = document.getElementById('chat-thread');
+
+    // Reveal the chat thread immediately so the rep message has a
+    // visible container while the launch plays.
+    if (thread) thread.classList.add('active');
+
+    // Trigger launch animation
+    if (heroWrap) heroWrap.classList.add('launching');
+    if (heroAstro) heroAstro.classList.add('launching');
+
+    // Wait for the 700ms launch keyframe
+    await new Promise(r => setTimeout(r, 700));
+
+    homeAstroState = 'footerActive';
+
+    // Hide hero block, reveal mini Astro in footer
+    if (heroWrap) heroWrap.style.display = 'none';
+    document.body.classList.remove('home-hero-idle');
+  }
+
   // Submit + agent flow
   let chatHistory = [];
   let chatBusy = false;
   let currentRunId = null;
 
+  // ── Mini Astro processing reveal ─────────────────────────
+  // Counter so concurrent submits don't double-toggle the slide-in.
+  // Reveal animation runs on submit; collapse animation runs after the
+  // outcome flash (success/error) finishes via flashAstroState(...).
+  let pendingRequests = 0;
+
+  function showProcessingAstro() {
+    pendingRequests++;
+    if (pendingRequests > 1) return; // already visible — let it keep playing
+    const container = document.getElementById('astro-mini-container');
+    if (container) container.dataset.visible = 'true';
+    setAstroState('thinking');
+  }
+
+  function hideProcessingAstro() {
+    pendingRequests = Math.max(0, pendingRequests - 1);
+    if (pendingRequests > 0) return; // another request still in flight
+    const container = document.getElementById('astro-mini-container');
+    // Wait for the outcome flash (~1200ms success / ~2000ms error)
+    // before sliding the container away. flashAstroState owns the
+    // sprite state machine; we only own the container collapse.
+    setTimeout(() => {
+      if (pendingRequests === 0 && container) {
+        container.dataset.visible = 'false';
+      }
+    }, 1300);
+  }
+
   function setBusy(busy) {
     chatBusy = busy;
     chatInput.disabled = busy;
     heroBtn.disabled = busy;
-    if (busy) setMascot('thinking');
-    else setMascot('idle');
+    if (busy) showProcessingAstro();
+    else      hideProcessingAstro();
   }
 
   function showLedgerProcessing() {
@@ -1354,11 +2048,75 @@
     if (!val || chatBusy) return;
     setBusy(true);
     chatInput.value = '';
+    chatInput.style.height = 'auto';
 
-    const looksLikeFieldNote = currentPane === 2 || /just (talked|met|saw|finished|wrapped|spoke)/i.test(val);
+    // Home: rep message renders synchronously BEFORE any animation
+    // or agent response, so DOM order matches conversation order.
+    if (currentPane === 0) {
+      appendThreadMessage('rep', val);
+      if (homeAstroState === 'hero') {
+        await homeFirstAction();
+      }
+    }
+
+    // Itinerary: build-route phrasing triggers the build flow
+    if (currentPane === 1 && itineraryState === 'accountsOnly' &&
+        /(build|plan|generate|sequence|make|create).*(route|stops|day|itinerary)/i.test(val)) {
+      setBusy(false);
+      buildRoute();
+      return;
+    }
+
+    // Field-note phrasing — fires the local post-visit ledger animation.
+    // Restricted to actual field-note language now (was: any Admin input).
+    const looksLikeFieldNote = /just (talked|met|saw|finished|wrapped|spoke)/i.test(val);
     if (looksLikeFieldNote) {
       showLedgerProcessing();
-      flashMascot('confirmed', 1400);
+      flashAstroState('success', 1200);
+      setBusy(false);
+      return;
+    }
+
+    // Admin pane: route to the Slack agent loop.
+    if (currentPane === 2) {
+      try {
+        const res = await fetch('/api/slack/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: val }),
+        }).then(r => r.json());
+
+        if (!res.ok) {
+          flashAstroState('error', 2000);
+          appendThreadMessage('agent', res.error || 'slack action failed');
+          setBusy(false);
+          return;
+        }
+
+        appendThreadMessage('agent', res.summary || 'done');
+        flashAstroState('success', 1200);
+        // Snappy dismissal — fade existing cards out immediately, then
+        // refresh from server (which now filters handled messages).
+        document.querySelectorAll('.slack-message').forEach(card => {
+          card.style.transition = 'opacity 0.3s';
+          card.style.opacity = '0';
+        });
+        setTimeout(() => loadCommIntake(), 1200);
+        setBusy(false);
+        return;
+      } catch (err) {
+        flashAstroState('error', 2000);
+        appendThreadMessage('agent', 'network error');
+        setBusy(false);
+        return;
+      }
+    }
+
+    // Home: requesting the brief expands the panel and streams content
+    if (currentPane === 0 && /(give|show|read).*brief|daily brief|brief me|^brief$/i.test(val)) {
+      appendThreadMessage('agent', 'BRIEF GENERATED. EXPANDING PANEL.');
+      await fetchDailyBrief();
+      flashAstroState('success', 1000);
       setBusy(false);
       return;
     }
@@ -1371,7 +2129,7 @@
       }).then(r => r.json());
 
       if (!res.ok) {
-        flashMascot('error', 1200);
+        flashAstroState('error', 2000);
         setBusy(false);
         return;
       }
@@ -1380,6 +2138,8 @@
 
       if (res.status === 'clarifying') {
         if (currentPane === 0) {
+          appendThreadMessage('agent', res.message);
+        } else {
           const out = document.getElementById('brief-out');
           await typeIntoTerminal(out, normalizeBriefLines(res.message), { charDelay: 16, lineDelay: 70 });
         }
@@ -1390,109 +2150,145 @@
 
       if (res.status === 'scheduling') {
         currentRunId = res.runId || null;
+        if (currentPane === 0) appendThreadMessage('agent', res.message || 'ROUTE SEQUENCING.');
         goToPane(1, true);
-        flashMascot('confirmed', 1400);
+        flashAstroState('success', 1200);
         chatHistory = [];
         setBusy(false);
       }
     } catch (err) {
-      flashMascot('error', 1200);
+      flashAstroState('error', 2000);
       setBusy(false);
     }
   }
 
   // Itinerary — pure SVG schematic, 10 fixed stops
+  // Each STOP carries its own lng/lat so Mapbox markers can be placed
+  // directly. Coordinates are city-level approximations of the address.
   const STOPS = [
-    { name: "EMPLOYNET",          addr: "128 BRENTWOOD DR, SOUTH SAN FRANCISCO, CA", time: null,    opp: "DISCOVERY · $0K" },
-    { name: "NORTHWIND SOFTWARE", addr: "1100 STEVENSON CREEK, SAN MATEO, CA",       time: "10:20", opp: "SOFTWARE RENEWAL · $80K" },
-    { name: "UNIVERSAL CONTAINERS",addr:"950 MIDDLEFIELD RD, REDWOOD CITY, CA",       time: "11:05", opp: "OPEN RENEWAL · $62K" },
-    { name: "ISIS TOYOTA",        addr: "201 EL CAMINO REAL, BURLINGAME, CA",         time: "12:30", opp: "LIFT REPLACEMENT · $48K" },
-    { name: "WATT TERRA",         addr: "488 NEWELL RD, PALO ALTO, CA",               time: "13:45", opp: "INITIAL PARTNERSHIP · $5K" },
-    { name: "ACME INDUSTRIES",    addr: "650 MARSH RD, MENLO PARK, CA",               time: "14:30", opp: "FLEET EXPANSION" },
-    { name: "BRACK INDUSTRIES",   addr: "320 INDUSTRIAL WAY, SAN MATEO, CA",          time: "15:15", opp: "PROCUREMENT FOLLOW-UP" },
-    { name: "DELTA FREIGHT",      addr: "75 AIRPORT BLVD, SOUTH SAN FRANCISCO, CA",   time: "15:45", opp: "RENEWAL CHECK-IN" },
-    { name: "PRESIDIO MEDICAL",   addr: "100 LINCOLN BLVD, SAN FRANCISCO, CA",        time: "15:55", opp: "DISCOVERY · $12K" },
-    { name: "HARBOR ANALYTICS",   addr: "500 HARBOR BAY PKWY, ALAMEDA, CA",           time: "16:10", opp: "PILOT EXTENSION" },
-  ];
-
-  const STOP_COORDS = [
-    { x: 50,  y: 60  }, { x: 80,  y: 90  }, { x: 110, y: 75  }, { x: 95,  y: 120 },
-    { x: 130, y: 140 }, { x: 160, y: 125 }, { x: 145, y: 170 }, { x: 110, y: 200 },
-    { x: 80,  y: 225 }, { x: 60,  y: 250 },
+    { name: "EMPLOYNET",           addr: "128 BRENTWOOD DR, SOUTH SAN FRANCISCO, CA", lng: -122.4350, lat: 37.6547, time: null,    opp: "DISCOVERY · $0K" },
+    { name: "NORTHWIND SOFTWARE",  addr: "1100 STEVENSON CREEK, SAN MATEO, CA",       lng: -122.3220, lat: 37.5630, time: "10:20", opp: "SOFTWARE RENEWAL · $80K" },
+    { name: "UNIVERSAL CONTAINERS",addr: "950 MIDDLEFIELD RD, REDWOOD CITY, CA",      lng: -122.2360, lat: 37.4853, time: "11:05", opp: "OPEN RENEWAL · $62K" },
+    { name: "ISIS TOYOTA",         addr: "201 EL CAMINO REAL, BURLINGAME, CA",        lng: -122.3750, lat: 37.5841, time: "12:30", opp: "LIFT REPLACEMENT · $48K" },
+    { name: "WATT TERRA",          addr: "488 NEWELL RD, PALO ALTO, CA",              lng: -122.1430, lat: 37.4419, time: "13:45", opp: "INITIAL PARTNERSHIP · $5K" },
+    { name: "ACME INDUSTRIES",     addr: "650 MARSH RD, MENLO PARK, CA",              lng: -122.1817, lat: 37.4530, time: "14:30", opp: "FLEET EXPANSION" },
+    { name: "BRACK INDUSTRIES",    addr: "320 INDUSTRIAL WAY, SAN MATEO, CA",         lng: -122.3100, lat: 37.5530, time: "15:15", opp: "PROCUREMENT FOLLOW-UP" },
+    { name: "DELTA FREIGHT",       addr: "75 AIRPORT BLVD, SOUTH SAN FRANCISCO, CA",  lng: -122.4080, lat: 37.6420, time: "15:45", opp: "RENEWAL CHECK-IN" },
+    { name: "PRESIDIO MEDICAL",    addr: "100 LINCOLN BLVD, SAN FRANCISCO, CA",       lng: -122.4660, lat: 37.7989, time: "15:55", opp: "DISCOVERY · $12K" },
+    { name: "HARBOR ANALYTICS",    addr: "500 HARBOR BAY PKWY, ALAMEDA, CA",          lng: -122.2380, lat: 37.7330, time: "16:10", opp: "PILOT EXTENSION" },
   ];
 
   let selectedIdx = 0;
   let selectedStop = STOPS[0];
 
-  function renderStopTargets() {
-    const group = document.getElementById('stop-targets');
-    const ret = document.getElementById('selected-reticle');
-    if (!group || !ret) return;
-    group.innerHTML = '';
-    ret.innerHTML = '';
+  // ── Mapbox map + marker management ────────────────────────
+  let map = null;
+  let mapReady = false;
+  let mapMarkers = [];
+  let pendingMapRender = null; // 'accountsOnly' | 'routeBuilt'
 
-    STOP_COORDS.forEach((c, i) => {
-      const isSel = i === selectedIdx;
-      const color = isSel ? '#8BE8FF' : '#7CFF8A';
-      const fillC = isSel ? '#8BE8FF' : '#A7F5B2';
-      const num = String(i + 1).padStart(2, '0');
-
-      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      g.setAttribute('style', 'cursor:pointer');
-      g.addEventListener('click', () => selectStop(i));
-
-      const outer = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      outer.setAttribute('x', c.x - 7);
-      outer.setAttribute('y', c.y - 7);
-      outer.setAttribute('width', 14);
-      outer.setAttribute('height', 14);
-      outer.setAttribute('fill', 'none');
-      outer.setAttribute('stroke', color);
-      outer.setAttribute('stroke-width', 1);
-      g.appendChild(outer);
-
-      const inner = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      inner.setAttribute('x', c.x - 3);
-      inner.setAttribute('y', c.y - 3);
-      inner.setAttribute('width', 6);
-      inner.setAttribute('height', 6);
-      inner.setAttribute('fill', fillC);
-      inner.setAttribute('opacity', isSel ? '1' : '0.85');
-      g.appendChild(inner);
-
-      const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      lbl.setAttribute('x', c.x + 10);
-      lbl.setAttribute('y', c.y + 3);
-      lbl.setAttribute('fill', color);
-      lbl.setAttribute('font-family', 'IBM Plex Mono, monospace');
-      lbl.setAttribute('font-size', '8');
-      lbl.setAttribute('font-weight', '700');
-      lbl.textContent = num;
-      g.appendChild(lbl);
-
-      group.appendChild(g);
-
-      if (isSel) {
-        const cx = c.x, cy = c.y;
-        const reticleG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        reticleG.setAttribute('class', 'reticle');
-        reticleG.setAttribute('stroke', '#8BE8FF');
-        reticleG.setAttribute('stroke-width', '1');
-        reticleG.setAttribute('fill', 'none');
-        const brackets = [
-          `M ${cx - 11} ${cy - 6} L ${cx - 11} ${cy - 11} L ${cx - 6}  ${cy - 11}`,
-          `M ${cx + 6}  ${cy - 11} L ${cx + 11} ${cy - 11} L ${cx + 11} ${cy - 6}`,
-          `M ${cx + 11} ${cy + 6}  L ${cx + 11} ${cy + 11} L ${cx + 6}  ${cy + 11}`,
-          `M ${cx - 6}  ${cy + 11} L ${cx - 11} ${cy + 11} L ${cx - 11} ${cy + 6}`,
-        ];
-        brackets.forEach(d => {
-          const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          p.setAttribute('d', d);
-          reticleG.appendChild(p);
-        });
-        ret.appendChild(reticleG);
+  async function initMap() {
+    try {
+      const cfg = await fetch('/api/config').then(r => r.json());
+      if (!cfg.mapboxToken) {
+        console.warn('No Mapbox token configured');
+        return;
       }
+      mapboxgl.accessToken = cfg.mapboxToken;
+      map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/champagnejohnny/cmpz5d9my006701rz4erl09bj',
+        center: [-122.20, 37.65],
+        zoom: 9.5,
+        attributionControl: false,
+      });
+
+      map.on('load', () => {
+        mapReady = true;
+        if (pendingMapRender === 'accountsOnly') paintAccountMarkers();
+        else if (pendingMapRender === 'routeBuilt') paintRouteAndStops();
+        pendingMapRender = null;
+      });
+    } catch (err) {
+      console.error('Map init failed:', err.message);
+    }
+  }
+
+  function clearMarkers() {
+    mapMarkers.forEach(m => m.remove());
+    mapMarkers = [];
+  }
+
+  // Small filled green dots — accountsOnly state
+  function paintAccountMarkers() {
+    if (!mapReady) { pendingMapRender = 'accountsOnly'; return; }
+    clearMarkers();
+    if (map.getLayer('route-line'))   map.removeLayer('route-line');
+    if (map.getSource('route-line'))  map.removeSource('route-line');
+
+    STOPS.forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'account-dot';
+      mapMarkers.push(
+        new mapboxgl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([s.lng, s.lat])
+          .addTo(map)
+      );
     });
+  }
+
+  // Numbered crosshair targets + selected reticle + dashed route line
+  function paintRouteAndStops() {
+    if (!mapReady) { pendingMapRender = 'routeBuilt'; return; }
+    clearMarkers();
+
+    // Dashed route line (GeoJSON layer)
+    const routeData = {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'LineString',
+        coordinates: STOPS.map(s => [s.lng, s.lat]),
+      },
+    };
+    if (map.getLayer('route-line'))  map.removeLayer('route-line');
+    if (map.getSource('route-line')) map.removeSource('route-line');
+    map.addSource('route-line', { type: 'geojson', data: routeData });
+    map.addLayer({
+      id: 'route-line',
+      type: 'line',
+      source: 'route-line',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: {
+        'line-color': '#A7F5B2',
+        'line-width': 1.6,
+        'line-dasharray': [2, 2],
+        'line-opacity': 0.95,
+      },
+    });
+
+    STOPS.forEach((s, i) => {
+      const isSel = i === selectedIdx;
+      const num = String(i + 1).padStart(2, '0');
+      const el = document.createElement('div');
+      el.className = 'stop-target' + (isSel ? ' selected' : '');
+      el.innerHTML =
+        '<div class="t-outer"></div>' +
+        '<div class="t-inner"></div>' +
+        '<div class="t-num">' + num + '</div>' +
+        (isSel ? '<div class="t-reticle"></div>' : '');
+      el.addEventListener('click', () => selectStop(i));
+      mapMarkers.push(
+        new mapboxgl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([s.lng, s.lat])
+          .addTo(map)
+      );
+    });
+  }
+
+  // Kept for API compatibility — now delegates to Mapbox rendering
+  function renderStopTargets() {
+    paintRouteAndStops();
   }
 
   function renderStopCard() {
@@ -1520,15 +2316,93 @@
   }
 
   function selectStop(idx) {
+    if (itineraryState !== 'routeBuilt') return;
     selectedIdx = Math.max(0, Math.min(idx, STOPS.length - 1));
     renderStopTargets();
     renderStopCard();
   }
 
+  // ── Itinerary state machine ──────────────────────────────
+  let itineraryState = 'accountsOnly';
+
+  function renderAccountsOnly() {
+    itineraryState = 'accountsOnly';
+    paintAccountMarkers();
+
+    // Hide STOP card, show empty line
+    const card = document.getElementById('stop-card');
+    if (card) card.classList.remove('active');
+    const emptyLine = document.getElementById('route-empty-line');
+    if (emptyLine) emptyLine.classList.remove('hidden');
+
+    // Hide build log
+    const buildLog = document.getElementById('route-build-log');
+    if (buildLog) buildLog.style.display = 'none';
+
+    // Reset summary to accountsOnly copy
+    const summary = document.getElementById('route-summary');
+    if (summary) {
+      summary.innerHTML =
+        '<div class="row1"><span class="rs-warn">ROUTE NOT BUILT</span></div>' +
+        '<div><span id="rs-accounts">' + STOPS.length + '</span> ACCOUNTS AVAILABLE</div>';
+    }
+  }
+
+  function renderRouteBuilt() {
+    itineraryState = 'routeBuilt';
+
+    selectedIdx = 0;
+    selectedStop = STOPS[0];
+    paintRouteAndStops();
+    renderStopCard();
+
+    const card = document.getElementById('stop-card');
+    if (card) card.classList.add('active');
+    const emptyLine = document.getElementById('route-empty-line');
+    if (emptyLine) emptyLine.classList.add('hidden');
+
+    const finalStop = [...STOPS].reverse().find(s => s.time);
+    const summary = document.getElementById('route-summary');
+    if (summary) {
+      summary.innerHTML =
+        '<div class="row1">' +
+          '<span>' + STOPS.length + ' STOPS</span>' +
+          '<span>FINAL: ' + (finalStop ? finalStop.time : '—') + '</span>' +
+          '<span>BUFFER: 09 MIN</span>' +
+        '</div>' +
+        '<div>SAN MATEO CONSTRAINT APPLIED</div>';
+    }
+  }
+
+  async function buildRoute() {
+    if (itineraryState !== 'accountsOnly') return;
+    itineraryState = 'buildingRoute';
+
+    // Hide empty line, show terminal build log
+    const emptyLine = document.getElementById('route-empty-line');
+    if (emptyLine) emptyLine.classList.add('hidden');
+    const buildLog = document.getElementById('route-build-log');
+    const buildOut = document.getElementById('route-build-out');
+    if (buildLog) buildLog.style.display = 'block';
+    if (buildOut) {
+      await typeIntoTerminal(buildOut, [
+        'sequencing accounts...',
+        'applying san mateo constraint...',
+        'building route...',
+      ], { charDelay: 18, lineDelay: 80 });
+    }
+
+    if (buildLog) buildLog.style.display = 'none';
+    renderRouteBuilt();
+    flashAstroState('success', 1000);
+  }
+
   document.getElementById('sc-next-btn').addEventListener('click', () => {
+    if (itineraryState !== 'routeBuilt') return;
     selectStop((selectedIdx + 1) % STOPS.length);
   });
   document.getElementById('sc-brief-btn').addEventListener('click', () => {
+    if (!selectedStop) return;
     chatInput.value = `give me the brief for ${selectedStop.name}`;
     submitChat();
   });
@@ -1544,10 +2418,31 @@
       setActivePane(initialPane);
     });
 
-    renderStopTargets();
-    renderStopCard();
+    // Home: heroIdle defaults — footer mini hidden, brief collapsed
+    document.body.classList.add('home-hero-idle');
+    setBriefCollapsed(true);
+
+    // Itinerary defaults to accountsOnly — no route, no STOP card.
+    // Map init is async; renderAccountsOnly() queues markers until ready.
+    initMap();
+    renderAccountsOnly();
+
+    // Wire brief collapse toggle — first expand auto-generates
+    const collapseBtn = document.getElementById('brief-collapse-btn');
+    if (collapseBtn) {
+      collapseBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (briefCollapsed && !briefHasContent) {
+          // First-time expand: kick off generation. fetchDailyBrief()
+          // expands the panel and streams content into it.
+          fetchDailyBrief();
+        } else {
+          setBriefCollapsed(!briefCollapsed);
+        }
+      });
+    }
+
     await checkHealth();
-    fetchDailyBrief();
   }
 
   init();
